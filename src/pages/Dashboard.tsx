@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, BarChart3, Users, DollarSign, Activity, Grip } from 'lucide-react';
 import { WidgetConfigModal } from '@/components/WidgetConfigModal';
 import { WidgetConfig } from '@/components/widget-config/types';
+import { AIInsightWidget } from '@/components/AIInsightWidget';
+import { AIInsightExpandedView } from '@/components/AIInsightExpandedView';
 
 interface Widget {
   id: string;
@@ -58,6 +59,7 @@ const mockWidgets: Widget[] = [
 const Dashboard: React.FC = () => {
   const [widgets, setWidgets] = useState<Widget[]>(mockWidgets);
   const [showWidgetConfig, setShowWidgetConfig] = useState(false);
+  const [showExpandedInsights, setShowExpandedInsights] = useState(false);
 
   const addWidget = (config: WidgetConfig) => {
     const newWidget: Widget = {
@@ -105,33 +107,12 @@ const Dashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* AI Insights Section */}
-        <Card className="bg-gradient-to-r from-blue-500/10 to-purple-600/10 border-blue-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-blue-500" />
-              AI Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium">Revenue Growth Detected</p>
-                  <p className="text-sm text-muted-foreground">Your revenue has increased by 12% this month. Consider scaling your marketing efforts.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium">Task Bottleneck Identified</p>
-                  <p className="text-sm text-muted-foreground">8 tasks have been pending for over a week. Review your workflow efficiency.</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* AI Insights Section - Now using the new component */}
+        <AIInsightWidget 
+          size="large"
+          onExpand={() => setShowExpandedInsights(true)}
+          className="mb-6"
+        />
 
         {/* Widgets Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -149,6 +130,12 @@ const Dashboard: React.FC = () => {
           onOpenChange={setShowWidgetConfig}
           onSave={addWidget}
         />
+
+        {showExpandedInsights && (
+          <AIInsightExpandedView 
+            onClose={() => setShowExpandedInsights(false)}
+          />
+        )}
       </div>
     </Layout>
   );
