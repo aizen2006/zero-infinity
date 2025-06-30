@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, BarChart3, Users, DollarSign, Activity, Grip } from 'lucide-react';
-import { AddWidgetDialog } from '@/components/AddWidgetDialog';
+import { WidgetConfigModal } from '@/components/WidgetConfigModal';
+import { WidgetConfig } from '@/components/widget-config/types';
 
 interface Widget {
   id: string;
@@ -56,14 +57,34 @@ const mockWidgets: Widget[] = [
 
 const Dashboard: React.FC = () => {
   const [widgets, setWidgets] = useState<Widget[]>(mockWidgets);
-  const [showAddWidget, setShowAddWidget] = useState(false);
+  const [showWidgetConfig, setShowWidgetConfig] = useState(false);
 
-  const addWidget = (widget: Omit<Widget, 'id'>) => {
-    const newWidget = {
-      ...widget,
-      id: Date.now().toString()
+  const addWidget = (config: WidgetConfig) => {
+    const newWidget: Widget = {
+      id: Date.now().toString(),
+      type: config.widgetType as 'chart' | 'stat' | 'table',
+      title: config.displaySettings.title,
+      app: config.app,
+      data: generateMockData(config.widgetType),
+      size: config.displaySettings.size
     };
     setWidgets([...widgets, newWidget]);
+  };
+
+  const generateMockData = (widgetType: string) => {
+    switch (widgetType) {
+      case 'stat':
+        return { value: '$1,234', change: '+8%' };
+      case 'chart':
+        return { completed: 15, pending: 5 };
+      case 'table':
+        return [
+          { id: '#001', name: 'Item 1', value: '$50' },
+          { id: '#002', name: 'Item 2', value: '$75' }
+        ];
+      default:
+        return {};
+    }
   };
 
   const removeWidget = (id: string) => {
@@ -78,7 +99,7 @@ const Dashboard: React.FC = () => {
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">Monitor all your business metrics in one place</p>
           </div>
-          <Button onClick={() => setShowAddWidget(true)}>
+          <Button onClick={() => setShowWidgetConfig(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Widget
           </Button>
@@ -123,10 +144,10 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
 
-        <AddWidgetDialog
-          open={showAddWidget}
-          onOpenChange={setShowAddWidget}
-          onAdd={addWidget}
+        <WidgetConfigModal
+          open={showWidgetConfig}
+          onOpenChange={setShowWidgetConfig}
+          onSave={addWidget}
         />
       </div>
     </Layout>
