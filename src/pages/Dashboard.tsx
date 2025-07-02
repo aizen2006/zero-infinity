@@ -3,94 +3,21 @@ import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, BarChart3, Users, DollarSign, Activity, Grip } from 'lucide-react';
+import { Plus, Grip, Loader2 } from 'lucide-react';
 import { WidgetConfigModal } from '@/components/WidgetConfigModal';
 import { WidgetConfig } from '@/components/widget-config/types';
 import { AIInsightWidget } from '@/components/AIInsightWidget';
 import { AIInsightExpandedView } from '@/components/AIInsightExpandedView';
-
-interface Widget {
-  id: string;
-  type: 'chart' | 'stat' | 'table';
-  title: string;
-  app: string;
-  data: any;
-  size: 'small' | 'medium' | 'large';
-}
-
-const mockWidgets: Widget[] = [
-  {
-    id: '1',
-    type: 'stat',
-    title: 'Total Revenue',
-    app: 'Stripe',
-    data: { value: '$12,345', change: '+12%' },
-    size: 'small'
-  },
-  {
-    id: '2',
-    type: 'stat',
-    title: 'Active Users',
-    app: 'Google Analytics',
-    data: { value: '2,847', change: '+5%' },
-    size: 'small'
-  },
-  {
-    id: '3',
-    type: 'chart',
-    title: 'Task Completion',
-    app: 'Trello',
-    data: { completed: 24, pending: 8 },
-    size: 'medium'
-  },
-  {
-    id: '4',
-    type: 'table',
-    title: 'Recent Orders',
-    app: 'Shopify',
-    data: [
-      { id: '#1234', customer: 'John Doe', amount: '$99' },
-      { id: '#1235', customer: 'Jane Smith', amount: '$149' },
-    ],
-    size: 'large'
-  }
-];
+import { useWidgets, Widget } from '@/hooks/useWidgets';
 
 const Dashboard: React.FC = () => {
-  const [widgets, setWidgets] = useState<Widget[]>(mockWidgets);
+  const { widgets, loading, addWidget, removeWidget } = useWidgets();
   const [showWidgetConfig, setShowWidgetConfig] = useState(false);
   const [showExpandedInsights, setShowExpandedInsights] = useState(false);
 
-  const addWidget = (config: WidgetConfig) => {
-    const newWidget: Widget = {
-      id: Date.now().toString(),
-      type: config.widgetType as 'chart' | 'stat' | 'table',
-      title: config.displaySettings.title,
-      app: config.app,
-      data: generateMockData(config.widgetType),
-      size: config.displaySettings.size
-    };
-    setWidgets([...widgets, newWidget]);
-  };
-
-  const generateMockData = (widgetType: string) => {
-    switch (widgetType) {
-      case 'stat':
-        return { value: '$1,234', change: '+8%' };
-      case 'chart':
-        return { completed: 15, pending: 5 };
-      case 'table':
-        return [
-          { id: '#001', name: 'Item 1', value: '$50' },
-          { id: '#002', name: 'Item 2', value: '$75' }
-        ];
-      default:
-        return {};
-    }
-  };
-
-  const removeWidget = (id: string) => {
-    setWidgets(widgets.filter(w => w.id !== id));
+  const handleAddWidget = async (config: WidgetConfig) => {
+    await addWidget(config);
+    setShowWidgetConfig(false);
   };
 
   return (
@@ -119,10 +46,25 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
 
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span className="ml-2 text-muted-foreground">Loading widgets...</span>
+          </div>
+        ) : widgets.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">No widgets yet. Add your first widget to get started!</p>
+            <Button onClick={() => setShowWidgetConfig(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Widget
+            </Button>
+          </div>
+        ) : null}
+
         <WidgetConfigModal
           open={showWidgetConfig}
           onOpenChange={setShowWidgetConfig}
-          onSave={addWidget}
+          onSave={handleAddWidget}
         />
 
         {showExpandedInsights && (
