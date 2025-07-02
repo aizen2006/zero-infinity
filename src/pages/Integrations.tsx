@@ -1,11 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Search, ExternalLink, CheckCircle, Circle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Integration {
   id: string;
@@ -93,9 +96,13 @@ const integrations: Integration[] = [
 ];
 
 const Integrations: React.FC = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [apps, setApps] = useState(integrations);
+  const [userIntegrations, setUserIntegrations] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const categories = ['All', ...Array.from(new Set(integrations.map(app => app.category)))];
 
@@ -106,15 +113,91 @@ const Integrations: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const toggleConnection = (id: string) => {
-    setApps(apps.map(app => 
-      app.id === id ? { ...app, connected: !app.connected } : app
-    ));
-    // Here you would typically make an API call to handle the OAuth flow
-    console.log(`${apps.find(app => app.id === id)?.connected ? 'Disconnecting' : 'Connecting'} ${id}`);
+  const fetchUserIntegrations = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('integrations')
+        .select('app_name')
+        .eq('user_id', user.id)
+        .eq('is_connected', true);
+      
+      if (error) throw error;
+      
+      const connectedApps = data.map(integration => integration.app_name);
+      setUserIntegrations(connectedApps);
+      
+      // Update apps with real connection status
+      setApps(integrations.map(app => ({
+        ...app,
+        connected: connectedApps.includes(app.id)
+      })));
+    } catch (error) {
+      console.error('Error fetching integrations:', error);
+    }
+  };
+
+  const toggleConnection = async (id: string) => {
+    if (!user) return;
+    
+    setLoading(true);
+    const app = apps.find(a => a.id === id);
+    if (!app) return;
+
+    try {
+      if (app.connected) {
+        // Disconnect
+        const { error } = await supabase
+          .from('integrations')
+          .update({ is_connected: false })
+          .eq('user_id', user.id)
+          .eq('app_name', id);
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Integration disconnected",
+          description: `${app.name} has been disconnected successfully.`,
+        });
+      } else {
+        // Connect
+        const { error } = await supabase
+          .from('integrations')
+          .upsert({
+            user_id: user.id,
+            app_name: id,
+            app_type: app.category.toLowerCase(),
+            is_connected: true,
+            config: {}
+          });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Integration connected",
+          description: `${app.name} has been connected successfully.`,
+        });
+      }
+      
+      await fetchUserIntegrations();
+    } catch (error) {
+      console.error('Error toggling integration:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update integration. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const connectedCount = apps.filter(app => app.connected).length;
+
+  useEffect(() => {
+    fetchUserIntegrations();
+  }, [user]);
 
   return (
     <Layout>
@@ -203,8 +286,9 @@ const Integrations: React.FC = () => {
                     onClick={() => toggleConnection(app.id)}
                     className="flex-1"
                     variant={app.connected ? 'outline' : 'default'}
+                    disabled={loading}
                   >
-                    {app.connected ? 'Disconnect' : 'Connect'}
+                    {loading ? 'Processing...' : app.connected ? 'Disconnect' : 'Connect'}
                   </Button>
                   <Button variant="ghost" size="icon">
                     <ExternalLink className="w-4 h-4" />
