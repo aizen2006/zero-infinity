@@ -107,12 +107,6 @@ const Dashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* AI Insights Section - Now using the new component */}
-        <AIInsightWidget 
-          size="large"
-          onExpand={() => setShowExpandedInsights(true)}
-          className="mb-6"
-        />
 
         {/* Widgets Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
