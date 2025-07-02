@@ -19,10 +19,12 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 
 const Settings: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const { displayName, avatarUrl } = useProfile();
 
   return (
     <Layout>
@@ -45,11 +47,11 @@ const Settings: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="w-20 h-20">
-                <AvatarImage src={user?.avatar} alt={user?.name} />
-                <AvatarFallback className="text-xl">{user?.name?.charAt(0)}</AvatarFallback>
+                <AvatarImage src={avatarUrl} alt={displayName} />
+                <AvatarFallback className="text-xl">{displayName?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="space-y-1">
-                <h3 className="text-lg font-medium">{user?.name}</h3>
+                <h3 className="text-lg font-medium">{displayName}</h3>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                 <Button variant="outline" size="sm">Change Avatar</Button>
               </div>
@@ -60,7 +62,7 @@ const Settings: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" defaultValue={user?.name} />
+                <Input id="name" defaultValue={displayName} />
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>

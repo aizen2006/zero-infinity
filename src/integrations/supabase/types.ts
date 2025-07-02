@@ -9,7 +9,264 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      insights: {
+        Row: {
+          confidence_score: number | null
+          content: string
+          created_at: string
+          data_period_end: string | null
+          data_period_start: string | null
+          id: string
+          insight_type: string
+          is_read: boolean
+          metadata: Json | null
+          source_app: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          content: string
+          created_at?: string
+          data_period_end?: string | null
+          data_period_start?: string | null
+          id?: string
+          insight_type: string
+          is_read?: boolean
+          metadata?: Json | null
+          source_app?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          content?: string
+          created_at?: string
+          data_period_end?: string | null
+          data_period_start?: string | null
+          id?: string
+          insight_type?: string
+          is_read?: boolean
+          metadata?: Json | null
+          source_app?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      integrations: {
+        Row: {
+          app_name: string
+          app_type: string
+          config: Json | null
+          created_at: string
+          id: string
+          is_connected: boolean
+          last_sync_at: string | null
+          oauth_token: string | null
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app_name: string
+          app_type: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          oauth_token?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app_name?: string
+          app_type?: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          oauth_token?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          insight_id: string | null
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          reminder_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          insight_id?: string | null
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          reminder_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          insight_id?: string | null
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          reminder_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_insight_id_fkey"
+            columns: ["insight_id"]
+            isOneToOne: false
+            referencedRelation: "insights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_reminder_id_fkey"
+            columns: ["reminder_id"]
+            isOneToOne: false
+            referencedRelation: "reminders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reminders: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          notification_channels: string[] | null
+          title: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          notification_channels?: string[] | null
+          title: string
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          notification_channels?: string[] | null
+          title?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      widgets: {
+        Row: {
+          app: string
+          config: Json | null
+          created_at: string
+          data: Json | null
+          id: string
+          position_x: number | null
+          position_y: number | null
+          size: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app: string
+          config?: Json | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          size?: string
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app?: string
+          config?: Json | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          size?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
