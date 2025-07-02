@@ -6,16 +6,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppSelectionStep } from './widget-config/AppSelectionStep';
 import { WidgetTypeStep } from './widget-config/WidgetTypeStep';
 import { DataFieldsStep } from './widget-config/DataFieldsStep';
 import { FiltersStep } from './widget-config/FiltersStep';
 import { DisplaySettingsStep } from './widget-config/DisplaySettingsStep';
 import { WidgetPreview } from './widget-config/WidgetPreview';
+import { WidgetConfigProgress } from './widget-config/WidgetConfigProgress';
+import { WidgetConfigNavigation } from './widget-config/WidgetConfigNavigation';
+import { WidgetConfigButtons } from './widget-config/WidgetConfigButtons';
 import { WidgetConfig } from './widget-config/types';
 
 interface WidgetConfigModalProps {
@@ -117,43 +117,17 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({
           <div className="flex-1 flex flex-col min-h-0">
             <DialogHeader className="p-6 pb-4 flex-shrink-0">
               <DialogTitle className="text-2xl font-bold">Add New Widget</DialogTitle>
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">
-                    Step {currentStep} of {steps.length}
-                  </span>
-                  <span className="text-sm font-medium">
-                    {Math.round((currentStep / steps.length) * 100)}%
-                  </span>
-                </div>
-                <Progress value={(currentStep / steps.length) * 100} className="h-2" />
-              </div>
+              <WidgetConfigProgress 
+                currentStep={currentStep} 
+                totalSteps={steps.length} 
+              />
             </DialogHeader>
 
             {/* Step Navigation */}
-            <div className="px-6 pb-4 flex-shrink-0">
-              <div className="flex items-center space-x-2 text-sm">
-                {steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center space-x-2">
-                    <div
-                      className={`flex items-center space-x-2 px-3 py-1 rounded-full ${
-                        currentStep === step.id
-                          ? 'bg-primary text-primary-foreground'
-                          : currentStep > step.id
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-                          : 'bg-muted text-muted-foreground'
-                      }`}
-                    >
-                      <span className="font-medium">{step.id}</span>
-                      <span className="hidden sm:inline">{step.title}</span>
-                    </div>
-                    {index < steps.length - 1 && (
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <WidgetConfigNavigation 
+              steps={steps} 
+              currentStep={currentStep} 
+            />
 
             {/* Step Content */}
             <div className="flex-1 px-6 pb-6 overflow-y-auto min-h-0">
@@ -173,33 +147,15 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({
             </div>
 
             {/* Navigation Buttons */}
-            <div className="p-6 border-t bg-muted/50">
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentStep === 1}
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Previous
-                </Button>
-                <div className="flex space-x-2">
-                  <Button variant="outline" onClick={() => onOpenChange(false)}>
-                    Cancel
-                  </Button>
-                  {currentStep < steps.length ? (
-                    <Button onClick={handleNext} disabled={!isStepValid()}>
-                      Next
-                      <ChevronRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  ) : (
-                    <Button onClick={handleSave} disabled={!isStepValid()}>
-                      Add to Dashboard
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <WidgetConfigButtons
+              currentStep={currentStep}
+              totalSteps={steps.length}
+              isStepValid={isStepValid()}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              onCancel={() => onOpenChange(false)}
+              onSave={handleSave}
+            />
           </div>
 
           {/* Right Panel - Preview */}
