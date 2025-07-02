@@ -111,11 +111,11 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] p-0 overflow-hidden">
-        <div className="flex h-full">
+      <DialogContent className="max-w-6xl h-[90vh] p-0 flex flex-col">
+        <div className="flex flex-1 min-h-0">
           {/* Left Panel - Configuration */}
-          <div className="flex-1 flex flex-col">
-            <DialogHeader className="p-6 pb-4">
+          <div className="flex-1 flex flex-col min-h-0">
+            <DialogHeader className="p-6 pb-4 flex-shrink-0">
               <DialogTitle className="text-2xl font-bold">Add New Widget</DialogTitle>
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
@@ -131,10 +131,10 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({
             </DialogHeader>
 
             {/* Step Navigation */}
-            <div className="px-6 pb-4">
+            <div className="px-6 pb-4 flex-shrink-0">
               <div className="flex items-center space-x-2 text-sm">
                 {steps.map((step, index) => (
-                  <React.Fragment key={step.id}>
+                  <div key={step.id} className="flex items-center space-x-2">
                     <div
                       className={`flex items-center space-x-2 px-3 py-1 rounded-full ${
                         currentStep === step.id
@@ -150,13 +150,13 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({
                     {index < steps.length - 1 && (
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
                     )}
-                  </React.Fragment>
+                  </div>
                 ))}
               </div>
             </div>
 
             {/* Step Content */}
-            <div className="flex-1 px-6 pb-6 overflow-auto">
+            <div className="flex-1 px-6 pb-6 overflow-y-auto min-h-0">
               <Card>
                 <CardContent className="p-6">
                   <div className="mb-6">

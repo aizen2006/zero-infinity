@@ -110,6 +110,8 @@ const Integrations: React.FC = () => {
     setApps(apps.map(app => 
       app.id === id ? { ...app, connected: !app.connected } : app
     ));
+    // Here you would typically make an API call to handle the OAuth flow
+    console.log(`${apps.find(app => app.id === id)?.connected ? 'Disconnecting' : 'Connecting'} ${id}`);
   };
 
   const connectedCount = apps.filter(app => app.connected).length;
