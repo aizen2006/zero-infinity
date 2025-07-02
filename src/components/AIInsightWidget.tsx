@@ -79,22 +79,22 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
   const getInsightIcon = (type: Insight['type']) => {
     switch (type) {
       case 'trend':
-        return <TrendingUp className="w-4 h-4 text-blue-400" />;
+        return <TrendingUp className="w-4 h-4 text-primary" />;
       case 'alert':
-        return <AlertTriangle className="w-4 h-4 text-orange-400" />;
+        return <AlertTriangle className="w-4 h-4 text-destructive" />;
       case 'suggestion':
-        return <Lightbulb className="w-4 h-4 text-green-400" />;
+        return <Lightbulb className="w-4 h-4 text-accent-foreground" />;
     }
   };
 
   const getInsightColor = (type: Insight['type']) => {
     switch (type) {
       case 'trend':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-primary/10 text-primary border-primary/20';
       case 'alert':
-        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+        return 'bg-destructive/10 text-destructive border-destructive/20';
       case 'suggestion':
-        return 'bg-green-500/10 text-green-400 border-green-500/20';
+        return 'bg-accent text-accent-foreground border-accent/20';
     }
   };
 
@@ -131,15 +131,15 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
   };
 
   return (
-    <Card className={`${getSizeClasses()} ${className} bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-700/50 relative overflow-hidden`}>
+    <Card className={`${getSizeClasses()} ${className} relative overflow-hidden`}>
       {/* Subtle glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 pointer-events-none" />
       
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="text-xs font-bold text-white">AI</span>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+              <span className="text-xs font-bold text-primary-foreground">AI</span>
             </div>
             Weekly Insights
           </CardTitle>
@@ -151,7 +151,7 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
             >
               <Info className="w-4 h-4 text-muted-foreground cursor-help" />
               {showTooltip && (
-                <div className="absolute top-6 right-0 bg-gray-800 text-white text-xs p-2 rounded-md shadow-lg z-10 w-48">
+                <div className="absolute top-6 right-0 bg-popover text-popover-foreground text-xs p-2 rounded-md shadow-lg z-10 w-48 border">
                   Insights generated from your connected apps using AI analysis
                 </div>
               )}
@@ -172,7 +172,7 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
       <CardContent className="space-y-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-32 space-y-3">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             <p className="text-sm text-muted-foreground">Analyzing your data...</p>
           </div>
         ) : (
@@ -212,7 +212,7 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
                     <Line 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="#3b82f6" 
+                      stroke="hsl(var(--primary))" 
                       strokeWidth={2}
                       dot={false}
                     />

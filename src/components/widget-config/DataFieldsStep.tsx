@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { WidgetConfig } from './types';
 
@@ -10,100 +8,89 @@ interface DataFieldsStepProps {
   setConfig: (config: WidgetConfig) => void;
 }
 
-const getFieldsForApp = (app: string): string[] => {
-  const fieldMap: Record<string, string[]> = {
-    'gmail': ['Subject', 'Sender', 'Date', 'Priority', 'Read Status', 'Attachments'],
-    'trello': ['Card Name', 'List', 'Due Date', 'Members', 'Labels', 'Progress', 'Comments'],
-    'google-sheets': ['Column A', 'Column B', 'Column C', 'Row Count', 'Last Updated', 'Formula Results'],
-    'shopify': ['Orders', 'Products', 'Revenue', 'Customers', 'Inventory', 'Order Status'],
-    'slack': ['Channel', 'Message', 'User', 'Timestamp', 'Reactions', 'Thread Count'],
-    'github': ['Repository', 'Issues', 'Pull Requests', 'Commits', 'Contributors', 'Stars']
-  };
-  
-  return fieldMap[app] || [];
+const getFieldsForApp = (app: string) => {
+  switch (app) {
+    case 'stripe':
+      return [
+        { id: 'revenue', name: 'Revenue', type: 'currency', description: 'Total revenue amount' },
+        { id: 'transactions', name: 'Transactions', type: 'number', description: 'Number of transactions' },
+        { id: 'customers', name: 'Customers', type: 'number', description: 'Total customers' },
+        { id: 'mrr', name: 'Monthly Recurring Revenue', type: 'currency', description: 'MRR growth' }
+      ];
+    case 'mailchimp':
+      return [
+        { id: 'subscribers', name: 'Subscribers', type: 'number', description: 'Total subscribers' },
+        { id: 'open_rate', name: 'Open Rate', type: 'percentage', description: 'Email open rate' },
+        { id: 'click_rate', name: 'Click Rate', type: 'percentage', description: 'Email click rate' },
+        { id: 'campaigns', name: 'Campaigns', type: 'number', description: 'Active campaigns' }
+      ];
+    case 'trello':
+      return [
+        { id: 'tasks', name: 'Tasks', type: 'number', description: 'Total tasks' },
+        { id: 'completed', name: 'Completed', type: 'number', description: 'Completed tasks' },
+        { id: 'overdue', name: 'Overdue', type: 'number', description: 'Overdue tasks' },
+        { id: 'progress', name: 'Progress', type: 'percentage', description: 'Overall progress' }
+      ];
+    case 'analytics':
+      return [
+        { id: 'visitors', name: 'Visitors', type: 'number', description: 'Unique visitors' },
+        { id: 'sessions', name: 'Sessions', type: 'number', description: 'Total sessions' },
+        { id: 'bounce_rate', name: 'Bounce Rate', type: 'percentage', description: 'Bounce rate' },
+        { id: 'conversion', name: 'Conversion Rate', type: 'percentage', description: 'Conversion rate' }
+      ];
+    default:
+      return [];
+  }
 };
 
-export const DataFieldsStep: React.FC<DataFieldsStepProps> = ({
-  config,
-  setConfig
-}) => {
+export const DataFieldsStep: React.FC<DataFieldsStepProps> = ({ config, setConfig }) => {
   const availableFields = getFieldsForApp(config.app);
 
-  const handleFieldToggle = (field: string) => {
-    const updatedFields = config.dataFields.includes(field)
-      ? config.dataFields.filter(f => f !== field)
-      : [...config.dataFields, field];
+  const handleFieldToggle = (fieldId: string) => {
+    const currentFields = config.dataFields || [];
+    const isSelected = currentFields.includes(fieldId);
     
-    setConfig({ ...config, dataFields: updatedFields });
-  };
-
-  const handleSelectAll = () => {
-    setConfig({ ...config, dataFields: availableFields });
-  };
-
-  const handleSelectNone = () => {
-    setConfig({ ...config, dataFields: [] });
+    const newFields = isSelected
+      ? currentFields.filter(id => id !== fieldId)
+      : [...currentFields, fieldId];
+    
+    setConfig({ ...config, dataFields: newFields });
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="font-medium">Available Data Fields</h4>
-          <p className="text-sm text-muted-foreground">
-            Select the fields you want to display in your widget
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={handleSelectAll}
-            className="text-sm text-primary hover:underline"
-          >
-            Select All
-          </button>
-          <button
-            onClick={handleSelectNone}
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            Select None
-          </button>
-        </div>
+      <div className="text-sm text-muted-foreground">
+        Select the data fields you want to display in your widget:
       </div>
-
-      <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {availableFields.map((field) => (
-              <div key={field} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50">
-                <Checkbox
-                  id={field}
-                  checked={config.dataFields.includes(field)}
-                  onCheckedChange={() => handleFieldToggle(field)}
-                />
+      
+      <div className="space-y-3">
+        {availableFields.map((field) => (
+          <div
+            key={field.id}
+            className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+          >
+            <Checkbox
+              id={field.id}
+              checked={config.dataFields?.includes(field.id) || false}
+              onCheckedChange={() => handleFieldToggle(field.id)}
+            />
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center space-x-2">
                 <label
-                  htmlFor={field}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  htmlFor={field.id}
+                  className="text-sm font-medium cursor-pointer"
                 >
-                  {field}
+                  {field.name}
                 </label>
+                <Badge variant="outline" className="text-xs">
+                  {field.type}
+                </Badge>
               </div>
-            ))}
+              <p className="text-xs text-muted-foreground">{field.description}</p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {config.dataFields.length > 0 && (
-        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-medium mb-3">Selected Fields ({config.dataFields.length})</h4>
-          <div className="flex flex-wrap gap-2">
-            {config.dataFields.map((field) => (
-              <Badge key={field} variant="secondary">
-                {field}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 };

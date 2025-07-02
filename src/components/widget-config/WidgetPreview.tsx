@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCcw } from 'lucide-react';
 import { WidgetConfig } from './types';
 
 interface WidgetPreviewProps {
@@ -10,32 +8,30 @@ interface WidgetPreviewProps {
 }
 
 export const WidgetPreview: React.FC<WidgetPreviewProps> = ({ config }) => {
-  const getSizeClass = () => {
+  const getSizeClasses = () => {
     switch (config.displaySettings.size) {
-      case 'small': return 'w-full h-32';
-      case 'medium': return 'w-full h-48';
-      case 'large': return 'w-full h-64';
-      default: return 'w-full h-48';
+      case 'small': return 'w-48 h-32';
+      case 'medium': return 'w-64 h-40';
+      case 'large': return 'w-80 h-48';
+      default: return 'w-64 h-40';
     }
   };
 
-  const getColorClass = () => {
-    const colorMap: Record<string, string> = {
-      blue: 'border-blue-500',
-      green: 'border-green-500',
-      purple: 'border-purple-500',
-      orange: 'border-orange-500',
-      red: 'border-red-500',
-      gray: 'border-gray-500',
-    };
-    return colorMap[config.displaySettings.color] || 'border-blue-500';
+  const getColorClasses = () => {
+    switch (config.displaySettings.color) {
+      case 'blue': return 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20';
+      case 'green': return 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20';
+      case 'purple': return 'border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20';
+      case 'orange': return 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20';
+      default: return 'border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20';
+    }
   };
 
-  const renderWidgetContent = () => {
+  const renderPreviewContent = () => {
     if (!config.widgetType) {
       return (
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          <p>Select a widget type to see preview</p>
+        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+          Select a widget type
         </div>
       );
     }
@@ -43,96 +39,64 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({ config }) => {
     switch (config.widgetType) {
       case 'stat':
         return (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="text-3xl font-bold">1,234</div>
-            <div className="text-sm text-muted-foreground">Sample Metric</div>
-            <div className="text-sm text-green-500 mt-1">+12%</div>
-          </div>
-        );
-      
-      case 'table':
-        return (
           <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Sample Data</div>
-            {config.dataFields.slice(0, 3).map((field, index) => (
-              <div key={index} className="flex justify-between text-sm">
-                <span>{field}</span>
-                <span className="text-muted-foreground">Value {index + 1}</span>
-              </div>
-            ))}
+            <div className="text-2xl font-bold">$12,345</div>
+            <p className="text-xs text-green-600">+15% this month</p>
           </div>
         );
-      
       case 'chart':
         return (
-          <div className="flex items-end justify-center h-full space-x-1">
-            {[40, 70, 50, 80, 60].map((height, index) => (
-              <div
-                key={index}
-                className={`w-4 bg-${config.displaySettings.color}-500 rounded-t`}
-                style={{ height: `${height}%` }}
-              />
-            ))}
-          </div>
-        );
-      
-      case 'ai-summary':
-        return (
           <div className="space-y-2">
-            <div className="text-sm font-medium">AI Insights</div>
-            <div className="text-xs text-muted-foreground">
-              Based on your data, we've identified key trends and patterns...
+            <div className="flex justify-between text-sm">
+              <span>Completed: 75</span>
+              <span>Pending: 25</span>
             </div>
-            <div className="flex space-x-1 mt-2">
-              <Badge variant="secondary" className="text-xs">Trend Up</Badge>
-              <Badge variant="secondary" className="text-xs">Action Needed</Badge>
+            <div className="w-full bg-secondary h-2 rounded-full">
+              <div className="bg-primary h-2 rounded-full w-3/4"></div>
             </div>
           </div>
         );
-      
-      default:
+      case 'table':
         return (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <p>Preview not available</p>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs">
+              <span>Item 1</span>
+              <span>$100</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span>Item 2</span>
+              <span>$200</span>
+            </div>
           </div>
         );
+      default:
+        return null;
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-muted-foreground">
-        Live preview of your widget
-      </div>
-      
-      <Card className={`${getSizeClass()} border-2 ${getColorClass()}`}>
+      <Card className={`${getSizeClasses()} ${getColorClasses()} transition-all duration-200`}>
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm">
-              {config.displaySettings.title || 'Widget Title'}
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              {config.app && (
-                <Badge variant="outline" className="text-xs">
-                  {config.app}
-                </Badge>
-              )}
-              <RefreshCcw className="w-3 h-3 text-muted-foreground" />
-            </div>
-          </div>
+          <CardTitle className="text-sm font-medium flex items-center justify-between">
+            {config.displaySettings.title || 'Widget Title'}
+            {config.app && (
+              <Badge variant="secondary" className="text-xs">
+                {config.app}
+              </Badge>
+            )}
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0 flex-1">
-          {renderWidgetContent()}
+        <CardContent className="text-xs">
+          {renderPreviewContent()}
         </CardContent>
       </Card>
-      
-      {/* Configuration Summary */}
+
       <div className="text-xs text-muted-foreground space-y-1">
-        <div><strong>App:</strong> {config.app || 'Not selected'}</div>
-        <div><strong>Type:</strong> {config.widgetType || 'Not selected'}</div>
-        <div><strong>Fields:</strong> {config.dataFields.length} selected</div>
-        <div><strong>Filters:</strong> {config.filters.length} applied</div>
-        <div><strong>Refresh:</strong> Every {config.displaySettings.refreshRate} min</div>
+        <div>Type: {config.widgetType || 'Not selected'}</div>
+        <div>Size: {config.displaySettings.size || 'medium'}</div>
+        <div>Fields: {config.dataFields?.length || 0} selected</div>
+        <div>Filters: {config.filters?.length || 0} applied</div>
       </div>
     </div>
   );

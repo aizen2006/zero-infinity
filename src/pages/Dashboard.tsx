@@ -105,7 +105,7 @@ const WidgetCard: React.FC<WidgetCardProps> = ({ widget, onRemove }) => {
         {widget.type === 'stat' && (
           <div>
             <div className="text-2xl font-bold">{widget.data.value}</div>
-            <p className="text-xs text-green-500">{widget.data.change}</p>
+            <p className="text-xs text-muted-foreground">{widget.data.change}</p>
           </div>
         )}
         {widget.type === 'chart' && (
