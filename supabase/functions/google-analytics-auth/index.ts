@@ -36,29 +36,14 @@ Deno.serve(async (req) => {
 
     if (action === 'initiate') {
       // Google OAuth 2.0 configuration
-      const googleAnalytics = Deno.env.get('G_analytics')
-      console.log('Google Analytics secret exists:', !!googleAnalytics)
-      
-      if (!googleAnalytics) {
-        throw new Error('Google Analytics credentials not configured')
-      }
-      
-      let credentials
-      try {
-        credentials = JSON.parse(googleAnalytics)
-        console.log('Parsed credentials keys:', Object.keys(credentials))
-      } catch (error) {
-        console.error('Error parsing googleanalytics secret:', error)
-        throw new Error('Invalid Google Analytics credentials format')
-      }
-      
-      const clientId = credentials.client_id
-      const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-analytics-callback`
+      const clientId = Deno.env.get('GOOGLE_CLIENT_ID')
+      console.log('Google Client ID exists:', !!clientId)
       
       if (!clientId) {
-        console.error('Client ID not found in credentials:', credentials)
-        throw new Error('Google Client ID not found in credentials')
+        throw new Error('Google Client ID not configured')
       }
+      const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-analytics-callback`
+      
 
       const scope = 'https://www.googleapis.com/auth/analytics.readonly'
       const state = user.id // Use user ID as state for security
