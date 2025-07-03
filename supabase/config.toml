@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.google-analytics-data]
 verify_jwt = true
+
+[functions.manage-api-keys]
+verify_jwt = true
+
+[functions.use-api-key]
+verify_jwt = true
