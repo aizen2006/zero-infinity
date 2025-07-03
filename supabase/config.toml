@@ -1,1 +1,10 @@
 project_id = "tvqwujlpgqoofmmvzxzw"
+
+[functions.google-analytics-auth]
+verify_jwt = true
+
+[functions.google-analytics-callback]
+verify_jwt = false
+
+[functions.google-analytics-data]
+verify_jwt = true

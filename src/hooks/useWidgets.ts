@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { WidgetConfig } from '@/components/widget-config/types';
+import { fetchGoogleAnalyticsData, generateMockData } from '@/services/integrationDataService';
 
 export interface Widget {
   id: string;
@@ -34,15 +35,51 @@ export const useWidgets = () => {
         return;
       }
 
-      const transformedWidgets: Widget[] = data.map(widget => ({
-        id: widget.id,
-        type: widget.type as 'chart' | 'stat' | 'table',
-        title: widget.title,
-        app: widget.app,
-        data: widget.data || generateMockData(widget.type),
-        size: widget.size as 'small' | 'medium' | 'large',
-        position_x: widget.position_x || 0,
-        position_y: widget.position_y || 0,
+      const transformedWidgets: Widget[] = await Promise.all(data.map(async (widget) => {
+        let widgetData = widget.data;
+        
+        // Fetch real data for Google Analytics widgets
+        if (widget.app === 'google-analytics' && !widgetData) {
+          const realData = await fetchGoogleAnalyticsData();
+          if (realData) {
+            // Transform real data based on widget type
+            switch (widget.type) {
+              case 'stat':
+                widgetData = {
+                  value: realData.sessions.toLocaleString(),
+                  change: '+12%', // In real app, calculate from historical data
+                  label: 'Sessions'
+                };
+                break;
+              case 'chart':
+                widgetData = {
+                  sessions: realData.sessions,
+                  users: realData.users,
+                  label: 'Sessions vs Users'
+                };
+                break;
+              case 'table':
+                widgetData = [
+                  { metric: 'Sessions', value: realData.sessions.toLocaleString(), change: '+12%' },
+                  { metric: 'Users', value: realData.users.toLocaleString(), change: '+8%' },
+                  { metric: 'Pageviews', value: realData.pageviews.toLocaleString(), change: '+15%' },
+                  { metric: 'Bounce Rate', value: realData.bounceRate + '%', change: '-3%' }
+                ];
+                break;
+            }
+          }
+        }
+
+        return {
+          id: widget.id,
+          type: widget.type as 'chart' | 'stat' | 'table',
+          title: widget.title,
+          app: widget.app,
+          data: widgetData || generateMockData(widget.type, widget.app),
+          size: widget.size as 'small' | 'medium' | 'large',
+          position_x: widget.position_x || 0,
+          position_y: widget.position_y || 0,
+        };
       }));
 
       setWidgets(transformedWidgets);
@@ -65,7 +102,7 @@ export const useWidgets = () => {
           title: config.displaySettings.title,
           app: config.app,
           size: config.displaySettings.size,
-          data: generateMockData(config.widgetType),
+          data: generateMockData(config.widgetType, config.app),
           position_x: 0,
           position_y: 0,
         })
@@ -82,7 +119,7 @@ export const useWidgets = () => {
         type: data.type as 'chart' | 'stat' | 'table',
         title: data.title,
         app: data.app,
-        data: data.data || generateMockData(data.type),
+        data: data.data || generateMockData(data.type, data.app),
         size: data.size as 'small' | 'medium' | 'large',
         position_x: data.position_x || 0,
         position_y: data.position_y || 0,
@@ -138,27 +175,6 @@ export const useWidgets = () => {
     }
   };
 
-  const generateMockData = (widgetType: string) => {
-    switch (widgetType) {
-      case 'stat':
-        return { 
-          value: `$${Math.floor(Math.random() * 10000)}`, 
-          change: `${Math.random() > 0.5 ? '+' : '-'}${Math.floor(Math.random() * 20)}%` 
-        };
-      case 'chart':
-        return { 
-          completed: Math.floor(Math.random() * 50), 
-          pending: Math.floor(Math.random() * 20) 
-        };
-      case 'table':
-        return [
-          { id: '#001', customer: 'John Doe', amount: '$50' },
-          { id: '#002', customer: 'Jane Smith', amount: '$75' }
-        ];
-      default:
-        return {};
-    }
-  };
 
   useEffect(() => {
     fetchWidgets();

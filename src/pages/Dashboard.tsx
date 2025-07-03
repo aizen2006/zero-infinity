@@ -105,29 +105,55 @@ const WidgetCard: React.FC<WidgetCardProps> = ({ widget, onRemove }) => {
         {widget.type === 'stat' && (
           <div>
             <div className="text-2xl font-bold">{widget.data.value}</div>
-            <p className="text-xs text-muted-foreground">{widget.data.change}</p>
+            <p className="text-xs text-muted-foreground">
+              {widget.data.change} {widget.data.label || ''}
+            </p>
           </div>
         )}
         {widget.type === 'chart' && (
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Completed: {widget.data.completed}</span>
-              <span>Pending: {widget.data.pending}</span>
-            </div>
-            <div className="w-full bg-secondary h-2 rounded-full">
-              <div 
-                className="bg-primary h-2 rounded-full" 
-                style={{ width: `${(widget.data.completed / (widget.data.completed + widget.data.pending)) * 100}%` }}
-              ></div>
-            </div>
+            {widget.app === 'google-analytics' ? (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span>Sessions: {widget.data.sessions?.toLocaleString()}</span>
+                  <span>Users: {widget.data.users?.toLocaleString()}</span>
+                </div>
+                <div className="w-full bg-secondary h-2 rounded-full">
+                  <div 
+                    className="bg-primary h-2 rounded-full" 
+                    style={{ width: `${(widget.data.sessions / (widget.data.sessions + widget.data.users)) * 100}%` }}
+                  ></div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span>Completed: {widget.data.completed}</span>
+                  <span>Pending: {widget.data.pending}</span>
+                </div>
+                <div className="w-full bg-secondary h-2 rounded-full">
+                  <div 
+                    className="bg-primary h-2 rounded-full" 
+                    style={{ width: `${(widget.data.completed / (widget.data.completed + widget.data.pending)) * 100}%` }}
+                  ></div>
+                </div>
+              </>
+            )}
           </div>
         )}
         {widget.type === 'table' && (
           <div className="space-y-2">
-            {widget.data.map((row: any, index: number) => (
+            {Array.isArray(widget.data) && widget.data.map((row: any, index: number) => (
               <div key={index} className="flex justify-between text-sm">
-                <span>{row.customer}</span>
-                <span className="font-medium">{row.amount}</span>
+                <span>{row.customer || row.metric}</span>
+                <span className="font-medium">
+                  {row.amount || row.value}
+                  {row.change && (
+                    <span className={`ml-2 text-xs ${row.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                      {row.change}
+                    </span>
+                  )}
+                </span>
               </div>
             ))}
           </div>

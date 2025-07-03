@@ -138,6 +138,59 @@ const Integrations: React.FC = () => {
     }
   };
 
+  const handleGoogleAnalyticsAuth = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('google-analytics-auth', {
+        body: { action: 'initiate' }
+      });
+
+      if (error) throw error;
+
+      const authWindow = window.open(
+        data.authUrl,
+        'google-auth',
+        'width=500,height=600,scrollbars=yes,resizable=yes'
+      );
+
+      // Listen for auth completion
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+          toast({
+            title: "Google Analytics Connected!",
+            description: "Successfully connected your Google Analytics account.",
+          });
+          fetchUserIntegrations();
+          window.removeEventListener('message', handleMessage);
+        } else if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+          toast({
+            title: "Connection Failed",
+            description: event.data.error || "Failed to connect Google Analytics.",
+            variant: "destructive",
+          });
+          window.removeEventListener('message', handleMessage);
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+
+      // Clean up if window is closed manually
+      const checkClosed = setInterval(() => {
+        if (authWindow?.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+        }
+      }, 1000);
+
+    } catch (error) {
+      console.error('Auth error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start Google Analytics authentication.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const toggleConnection = async (id: string) => {
     if (!user) return;
     
@@ -161,7 +214,14 @@ const Integrations: React.FC = () => {
           description: `${app.name} has been disconnected successfully.`,
         });
       } else {
-        // Connect
+        // Handle Google Analytics OAuth flow
+        if (id === 'google-analytics') {
+          setLoading(false);
+          await handleGoogleAnalyticsAuth();
+          return;
+        }
+
+        // Regular connection for other apps
         const { error } = await supabase
           .from('integrations')
           .upsert({
