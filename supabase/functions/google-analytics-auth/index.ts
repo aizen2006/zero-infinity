@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
 
     if (action === 'initiate') {
       // Google OAuth 2.0 configuration
-      const googleAnalytics = Deno.env.get('googleanalytics')
+      const googleAnalytics = Deno.env.get('G_analytics')
       console.log('Google Analytics secret exists:', !!googleAnalytics)
       
       if (!googleAnalytics) {

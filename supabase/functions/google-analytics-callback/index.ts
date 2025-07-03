@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     }
 
     // Exchange code for tokens
-    const googleAnalytics = Deno.env.get('googleanalytics')
+    const googleAnalytics = Deno.env.get('G_analytics')
     if (!googleAnalytics) {
       throw new Error('Google Analytics credentials not configured')
     }
