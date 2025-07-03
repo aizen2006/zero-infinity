@@ -26,7 +26,7 @@ const integrations: Integration[] = [
     name: 'Google Analytics',
     description: 'Track website traffic and user behavior',
     category: 'Analytics',
-    connected: true,
+    connected: false,
     logo: '📊',
     color: 'bg-orange-500'
   },
@@ -35,27 +35,36 @@ const integrations: Integration[] = [
     name: 'Stripe',
     description: 'Payment processing and financial data',
     category: 'Finance',
-    connected: true,
+    connected: false,
     logo: '💳',
     color: 'bg-purple-500'
-  },
-  {
-    id: 'trello',
-    name: 'Trello',
-    description: 'Project management and task tracking',
-    category: 'Productivity',
-    connected: false,
-    logo: '📋',
-    color: 'bg-blue-500'
   },
   {
     id: 'slack',
     name: 'Slack',
     description: 'Team communication and notifications',
     category: 'Communication',
-    connected: true,
+    connected: false,
     logo: '💬',
     color: 'bg-green-500'
+  },
+  {
+    id: 'gmail',
+    name: 'Gmail',
+    description: 'Email integration and management',
+    category: 'Communication',
+    connected: false,
+    logo: '📧',
+    color: 'bg-red-500'
+  },
+  {
+    id: 'google-sheets',
+    name: 'Google Sheets',
+    description: 'Spreadsheet data integration',
+    category: 'Productivity',
+    connected: false,
+    logo: '📄',
+    color: 'bg-green-600'
   },
   {
     id: 'github',
@@ -83,15 +92,6 @@ const integrations: Integration[] = [
     connected: false,
     logo: '📧',
     color: 'bg-yellow-500'
-  },
-  {
-    id: 'salesforce',
-    name: 'Salesforce',
-    description: 'Customer relationship management',
-    category: 'CRM',
-    connected: false,
-    logo: '☁️',
-    color: 'bg-blue-600'
   }
 ];
 
@@ -138,33 +138,36 @@ const Integrations: React.FC = () => {
     }
   };
 
-  const handleGoogleAnalyticsAuth = async () => {
+  const handleOAuthAuth = async (service: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('google-analytics-auth', {
-        body: { action: 'initiate' }
+      const functionName = service === 'google-analytics' ? 'google-analytics-auth' : 'oauth-auth';
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { action: 'initiate', service: service }
       });
 
       if (error) throw error;
 
       const authWindow = window.open(
         data.authUrl,
-        'google-auth',
+        `${service}-auth`,
         'width=500,height=600,scrollbars=yes,resizable=yes'
       );
 
       // Listen for auth completion
       const handleMessage = (event: MessageEvent) => {
-        if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+        if (event.data.type === 'GOOGLE_AUTH_SUCCESS' || event.data.type === 'OAUTH_SUCCESS') {
+          const serviceName = service.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
           toast({
-            title: "Google Analytics Connected!",
-            description: "Successfully connected your Google Analytics account.",
+            title: `${serviceName} Connected!`,
+            description: `Successfully connected your ${serviceName} account.`,
           });
           fetchUserIntegrations();
           window.removeEventListener('message', handleMessage);
-        } else if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+        } else if (event.data.type === 'GOOGLE_AUTH_ERROR' || event.data.type === 'OAUTH_ERROR') {
+          const serviceName = service.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
           toast({
             title: "Connection Failed",
-            description: event.data.error || "Failed to connect Google Analytics.",
+            description: event.data.error || `Failed to connect ${serviceName}.`,
             variant: "destructive",
           });
           window.removeEventListener('message', handleMessage);
@@ -183,9 +186,10 @@ const Integrations: React.FC = () => {
 
     } catch (error) {
       console.error('Auth error:', error);
+      const serviceName = service.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
       toast({
         title: "Error",
-        description: "Failed to start Google Analytics authentication.",
+        description: `Failed to start ${serviceName} authentication.`,
         variant: "destructive",
       });
     }
@@ -214,14 +218,15 @@ const Integrations: React.FC = () => {
           description: `${app.name} has been disconnected successfully.`,
         });
       } else {
-        // Handle Google Analytics OAuth flow
-        if (id === 'google-analytics') {
+        // Handle OAuth flows for supported services
+        const oauthServices = ['google-analytics', 'stripe', 'slack', 'gmail', 'google-sheets', 'github', 'shopify', 'mailchimp'];
+        if (oauthServices.includes(id)) {
           setLoading(false);
-          await handleGoogleAnalyticsAuth();
+          await handleOAuthAuth(id);
           return;
         }
 
-        // Regular connection for other apps
+        // Regular connection for other apps (fallback)
         const { error } = await supabase
           .from('integrations')
           .upsert({
