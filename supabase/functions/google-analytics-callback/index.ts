@@ -30,12 +30,18 @@ Deno.serve(async (req) => {
     }
 
     // Exchange code for tokens
-    const clientId = Deno.env.get('GOOGLE_CLIENT_ID')
-    const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')
+    const googleAnalytics = Deno.env.get('googleanalytics')
+    if (!googleAnalytics) {
+      throw new Error('Google Analytics credentials not configured')
+    }
+    
+    const credentials = JSON.parse(googleAnalytics)
+    const clientId = credentials.client_id
+    const clientSecret = credentials.client_secret
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-analytics-callback`
 
     if (!clientId || !clientSecret) {
-      throw new Error('Google OAuth credentials not configured')
+      throw new Error('Google OAuth credentials not found')
     }
 
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {

@@ -36,11 +36,17 @@ Deno.serve(async (req) => {
 
     if (action === 'initiate') {
       // Google OAuth 2.0 configuration
-      const clientId = Deno.env.get('GOOGLE_CLIENT_ID')
+      const googleAnalytics = Deno.env.get('googleanalytics')
+      if (!googleAnalytics) {
+        throw new Error('Google Analytics credentials not configured')
+      }
+      
+      const credentials = JSON.parse(googleAnalytics)
+      const clientId = credentials.client_id
       const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-analytics-callback`
       
       if (!clientId) {
-        throw new Error('Google Client ID not configured')
+        throw new Error('Google Client ID not found in credentials')
       }
 
       const scope = 'https://www.googleapis.com/auth/analytics.readonly'

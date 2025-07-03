@@ -57,8 +57,8 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          client_id: Deno.env.get('GOOGLE_CLIENT_ID') ?? '',
-          client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET') ?? '',
+          client_id: JSON.parse(Deno.env.get('googleanalytics') ?? '{}').client_id ?? '',
+          client_secret: JSON.parse(Deno.env.get('googleanalytics') ?? '{}').client_secret ?? '',
           refresh_token: integration.refresh_token,
           grant_type: 'refresh_token',
         }),
