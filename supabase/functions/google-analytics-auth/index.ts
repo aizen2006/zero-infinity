@@ -42,11 +42,11 @@ Deno.serve(async (req) => {
       if (!clientId) {
         throw new Error('Google Client ID not configured')
       }
-      const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-analytics-callback`
+      const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/oauth-callback`
       
 
       const scope = 'https://www.googleapis.com/auth/analytics.readonly'
-      const state = user.id // Use user ID as state for security
+      const state = `${user.id}:google-analytics` // Include service in state for callback
 
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${clientId}&` +

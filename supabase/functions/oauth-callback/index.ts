@@ -35,6 +35,11 @@ const tokenConfigs: TokenConfig = {
     clientIdKey: 'GOOGLE_CLIENT_ID',
     clientSecretKey: 'GOOGLE_CLIENT_SECRET'
   },
+  'google-analytics': {
+    tokenUrl: 'https://oauth2.googleapis.com/token',
+    clientIdKey: 'GOOGLE_CLIENT_ID',
+    clientSecretKey: 'GOOGLE_CLIENT_SECRET'
+  },
   'github': {
     tokenUrl: 'https://github.com/login/oauth/access_token',
     clientIdKey: 'GITHUB_CLIENT_ID',
@@ -229,7 +234,8 @@ function getAppType(service: string): string {
     'google-sheets': 'productivity',
     'github': 'development',
     'shopify': 'ecommerce',
-    'mailchimp': 'marketing'
+    'mailchimp': 'marketing',
+    'google-analytics': 'analytics'
   }
   return typeMap[service] || 'other'
 }
