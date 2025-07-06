@@ -1,250 +1,301 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  RefreshCcw, 
-  Expand, 
-  TrendingUp, 
-  AlertTriangle, 
-  Lightbulb,
-  Info,
-  BarChart3
-} from 'lucide-react';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sparkles, Brain, TrendingUp, AlertTriangle, CheckCircle, RefreshCw, Lightbulb } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface Insight {
+interface AIInsight {
   id: string;
-  type: 'trend' | 'alert' | 'suggestion';
   title: string;
   content: string;
+  type: 'trend' | 'alert' | 'recommendation' | 'prediction';
   confidence: number;
-  timestamp: Date;
-  chartData?: Array<{ value: number; time: string }>;
-  source: string[];
+  source: string;
+  createdAt: string;
+  isRead: boolean;
 }
 
 interface AIInsightWidgetProps {
   size?: 'small' | 'medium' | 'large';
-  onExpand?: () => void;
   className?: string;
 }
 
-const mockInsights: Insight[] = [
-  {
-    id: '1',
-    type: 'trend',
-    title: 'Revenue Growth Detected',
-    content: 'Your revenue has increased by 23% over the last 30 days, primarily driven by improved conversion rates from your email campaigns. This trend suggests your recent marketing optimizations are working effectively.',
-    confidence: 92,
-    timestamp: new Date(),
-    chartData: [
-      { value: 1200, time: 'Week 1' },
-      { value: 1350, time: 'Week 2' },
-      { value: 1480, time: 'Week 3' },
-      { value: 1680, time: 'Week 4' }
-    ],
-    source: ['Stripe', 'Mailchimp']
-  },
-  {
-    id: '2',
-    type: 'alert',
-    title: 'Task Bottleneck Identified',
-    content: 'You have 15 tasks overdue by more than 3 days in your project management system. This is 40% higher than usual and may impact upcoming deadlines.',
-    confidence: 87,
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    source: ['Trello', 'Asana']
-  },
-  {
-    id: '3',
-    type: 'suggestion',
-    title: 'Optimize Email Send Times',
-    content: 'Analysis shows your email open rates are 35% higher when sent on Tuesday mornings between 9-11 AM. Consider scheduling future campaigns during this window.',
-    confidence: 78,
-    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
-    source: ['Gmail', 'Mailchimp']
-  }
-];
-
-export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
-  size = 'medium',
-  onExpand,
-  className = ''
+export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({ 
+  size = 'medium', 
+  className = '' 
 }) => {
-  const [currentInsight, setCurrentInsight] = useState<Insight>(mockInsights[0]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const { user } = useAuth();
+  const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
 
-  const getInsightIcon = (type: Insight['type']) => {
-    switch (type) {
-      case 'trend':
-        return <TrendingUp className="w-4 h-4 text-primary" />;
-      case 'alert':
-        return <AlertTriangle className="w-4 h-4 text-destructive" />;
-      case 'suggestion':
-        return <Lightbulb className="w-4 h-4 text-accent-foreground" />;
+  const sizeClasses = {
+    small: 'col-span-1',
+    medium: 'col-span-1 md:col-span-2',
+    large: 'col-span-1 md:col-span-2 lg:col-span-3'
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchInsights();
+    }
+  }, [user]);
+
+  const fetchInsights = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('insights')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      const mappedInsights: AIInsight[] = data.map(insight => ({
+        id: insight.id,
+        title: insight.title,
+        content: insight.content,
+        type: insight.insight_type as any,
+        confidence: insight.confidence_score || 0.8,
+        source: insight.source_app || 'dashboard',
+        createdAt: insight.created_at,
+        isRead: insight.is_read
+      }));
+
+      setInsights(mappedInsights);
+    } catch (error) {
+      console.error('Error fetching insights:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getInsightColor = (type: Insight['type']) => {
-    switch (type) {
-      case 'trend':
-        return 'bg-primary/10 text-primary border-primary/20';
-      case 'alert':
-        return 'bg-destructive/10 text-destructive border-destructive/20';
-      case 'suggestion':
-        return 'bg-accent text-accent-foreground border-accent/20';
-    }
-  };
-
-  const getSizeClasses = () => {
-    switch (size) {
-      case 'small':
-        return 'h-48';
-      case 'medium':
-        return 'h-64';
-      case 'large':
-        return 'h-80';
-    }
-  };
-
-  const refreshInsight = async () => {
-    setIsLoading(true);
-    // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  const generateNewInsights = async () => {
+    if (!user) return;
     
-    // Cycle through mock insights
-    const currentIndex = mockInsights.findIndex(insight => insight.id === currentInsight.id);
-    const nextIndex = (currentIndex + 1) % mockInsights.length;
-    setCurrentInsight(mockInsights[nextIndex]);
-    setIsLoading(false);
+    setGenerating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
+
+      // Generate insights using Gemini AI
+      const response = await supabase.functions.invoke('gemini-chat', {
+        body: {
+          messages: [
+            {
+              role: 'user',
+              content: `Based on the current dashboard data, generate 3 business insights. Include trends, recommendations, and alerts. Focus on actionable insights that could help improve business performance. Return as JSON array with fields: title, content, type (trend/alert/recommendation), confidence (0-1).`
+            }
+          ],
+          task: 'insights'
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        }
+      });
+
+      if (response.data?.response) {
+        try {
+          // Try to extract JSON from the response
+          let jsonStr = response.data.response;
+          const jsonMatch = jsonStr.match(/\[[\s\S]*\]/);
+          if (jsonMatch) {
+            jsonStr = jsonMatch[0];
+          }
+          
+          const aiInsights = JSON.parse(jsonStr);
+          
+          // Save insights to database
+          for (const insight of aiInsights) {
+            await supabase
+              .from('insights')
+              .insert({
+                user_id: user.id,
+                title: insight.title,
+                content: insight.content,
+                insight_type: insight.type,
+                confidence_score: insight.confidence,
+                source_app: 'ai-dashboard'
+              });
+          }
+          
+          // Refresh insights
+          await fetchInsights();
+        } catch (parseError) {
+          console.error('Error parsing AI insights:', parseError);
+          
+          // Fallback: Create a general insight
+          await supabase
+            .from('insights')
+            .insert({
+              user_id: user.id,
+              title: 'AI Analysis Complete',
+              content: response.data.response,
+              insight_type: 'recommendation',
+              confidence_score: 0.7,
+              source_app: 'ai-dashboard'
+            });
+          
+          await fetchInsights();
+        }
+      }
+    } catch (error) {
+      console.error('Error generating insights:', error);
+    } finally {
+      setGenerating(false);
+    }
   };
 
-  const formatTimestamp = (timestamp: Date) => {
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    return `${Math.floor(diffInHours / 24)}d ago`;
+  const markAsRead = async (insightId: string) => {
+    try {
+      await supabase
+        .from('insights')
+        .update({ is_read: true })
+        .eq('id', insightId);
+      
+      setInsights(prev => 
+        prev.map(insight => 
+          insight.id === insightId ? { ...insight, isRead: true } : insight
+        )
+      );
+    } catch (error) {
+      console.error('Error marking insight as read:', error);
+    }
   };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'trend': return TrendingUp;
+      case 'alert': return AlertTriangle;
+      case 'recommendation': return CheckCircle;
+      case 'prediction': return Brain;
+      default: return Lightbulb;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'trend': return 'text-blue-500';
+      case 'alert': return 'text-red-500';
+      case 'recommendation': return 'text-green-500';
+      case 'prediction': return 'text-purple-500';
+      default: return 'text-primary';
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className={`${sizeClasses[size]} ${className} animate-pulse shadow-elegant`}>
+        <CardHeader>
+          <div className="h-6 bg-muted rounded w-32"></div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-3 bg-muted rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className={`${getSizeClasses()} ${className} relative overflow-hidden`}>
-      {/* Subtle glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 pointer-events-none" />
-      
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center">
-              <span className="text-xs font-bold text-primary-foreground">AI</span>
-            </div>
-            Weekly Insights
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <div 
-              className="relative"
-              onMouseEnter={() => setShowTooltip(true)}
-              onMouseLeave={() => setShowTooltip(false)}
-            >
-              <Info className="w-4 h-4 text-muted-foreground cursor-help" />
-              {showTooltip && (
-                <div className="absolute top-6 right-0 bg-popover text-popover-foreground text-xs p-2 rounded-md shadow-lg z-10 w-48 border">
-                  Insights generated from your connected apps using AI analysis
-                </div>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={refreshInsight}
-              disabled={isLoading}
-              className="h-8 w-8 p-0"
-            >
-              <RefreshCcw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
+    <Card className={`${sizeClasses[size]} ${className} shadow-elegant hover:shadow-glow transition-all duration-300 border-l-4 border-l-primary bg-gradient-subtle`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
+          AI Insights
+        </CardTitle>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            {insights.filter(i => !i.isRead).length} new
+          </Badge>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={generateNewInsights}
+            disabled={generating}
+            className="text-xs"
+          >
+            <RefreshCw className={`w-3 h-3 mr-1 ${generating ? 'animate-spin' : ''}`} />
+            {generating ? 'Generating...' : 'Generate'}
+          </Button>
         </div>
       </CardHeader>
-
-      <CardContent className="space-y-4">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-32 space-y-3">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground">Analyzing your data...</p>
+      <CardContent>
+        {insights.length === 0 ? (
+          <div className="text-center py-6">
+            <Brain className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+            <p className="text-sm text-muted-foreground mb-3">No insights yet</p>
+            <Button 
+              size="sm" 
+              onClick={generateNewInsights}
+              disabled={generating}
+              className="bg-gradient-primary shadow-elegant"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generate AI Insights
+            </Button>
           </div>
         ) : (
-          <>
-            {/* Insight Header */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                {getInsightIcon(currentInsight.type)}
-                <Badge className={`${getInsightColor(currentInsight.type)} text-xs`}>
-                  {currentInsight.type.charAt(0).toUpperCase() + currentInsight.type.slice(1)}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {currentInsight.confidence}% confidence
-                </span>
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {formatTimestamp(currentInsight.timestamp)}
-              </span>
+          <ScrollArea className={size === 'small' ? 'h-32' : size === 'medium' ? 'h-48' : 'h-64'}>
+            <div className="space-y-3">
+              {insights.map((insight) => {
+                const TypeIcon = getTypeIcon(insight.type);
+                const typeColor = getTypeColor(insight.type);
+                
+                return (
+                  <div 
+                    key={insight.id}
+                    className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-elegant ${!insight.isRead ? 'bg-primary/5 border-primary/20' : 'bg-card border-border/50 hover:bg-accent/50'}`}
+                    onClick={() => markAsRead(insight.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`p-1.5 rounded-full bg-gradient-primary flex-shrink-0 mt-0.5 shadow-sm`}>
+                        <TypeIcon className="w-3 h-3 text-primary-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="text-sm font-medium truncate text-gradient-primary">
+                            {insight.title}
+                          </h4>
+                          <div className="flex items-center gap-1 ml-2">
+                            <Badge variant="outline" className="text-xs">
+                              {Math.round(insight.confidence * 100)}%
+                            </Badge>
+                            {!insight.isRead && (
+                              <div className="w-2 h-2 bg-primary rounded-full shadow-glow" />
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {insight.content}
+                        </p>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(insight.createdAt).toLocaleDateString()}
+                          </span>
+                          <Badge variant="secondary" className={`text-xs ${typeColor}`}>
+                            {insight.type}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Insight Title */}
-            <h3 className="font-semibold text-sm">{currentInsight.title}</h3>
-
-            {/* Insight Content */}
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {size === 'small' 
-                ? `${currentInsight.content.substring(0, 100)}...`
-                : currentInsight.content
-              }
-            </p>
-
-            {/* Mini Chart (if available and widget is medium/large) */}
-            {currentInsight.chartData && size !== 'small' && (
-              <div className="h-16 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={currentInsight.chartData}>
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Source Apps */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">Sources:</span>
-                {currentInsight.source.map((app, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {app}
-                  </Badge>
-                ))}
-              </div>
-              
-              {onExpand && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onExpand}
-                  className="text-xs h-6 px-2"
-                >
-                  <Expand className="w-3 h-3 mr-1" />
-                  See More
-                </Button>
-              )}
-            </div>
-          </>
+          </ScrollArea>
         )}
       </CardContent>
     </Card>

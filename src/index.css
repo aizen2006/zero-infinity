@@ -137,11 +137,22 @@ All colors MUST be HSL.
     background: var(--gradient-primary);
   }
   
+  .bg-gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+  
   .shadow-elegant {
     box-shadow: var(--shadow-elegant);
   }
   
   .shadow-glow {
     box-shadow: var(--shadow-glow);
+  }
+  
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
