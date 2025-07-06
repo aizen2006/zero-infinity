@@ -32,7 +32,7 @@ export const MetricCard: React.FC<TemplateProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent bg-slate-300">
+        <div className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           {data.value}
         </div>
         <div className="flex items-center gap-2 mt-2">
@@ -122,7 +122,7 @@ export const StatsGrid: React.FC<TemplateProps> = ({
                 <div className="h-12 w-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-sm">
                   <stat.icon className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent bg-slate-400">{stat.value}</div>
+                <div className="text-2xl font-bold bg-gradient-primary bg-clip-text -bottom-1 ">{stat.value}</div>
                 <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
                 <div className={`flex items-center justify-center gap-1 text-sm font-medium ${trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                   <TrendIcon className="h-4 w-4" />
