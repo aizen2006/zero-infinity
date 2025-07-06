@@ -293,8 +293,8 @@ const Dashboard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Fourth Row - Activity, Actions, Gmail and AI Insights */}
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+          {/* Fourth Row - Activity, Actions and Gmail */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-2">
               <RecentActivity title="Recent Activity" data={sampleActivityData} size="large" />
             </div>
@@ -302,15 +302,11 @@ const Dashboard: React.FC = () => {
             <div className="lg:col-span-2">
               <GmailWidget size="medium" />
             </div>
-            <AIInsightWidget size="small" />
           </div>
 
-          {/* Fifth Row - Calendar and AI Insights Expanded */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <CalendarIntegration />
-            </div>
-            <AIInsightWidget size="medium" />
+          {/* Fifth Row - Calendar */}
+          <div className="grid grid-cols-1 gap-6">
+            <CalendarIntegration />
           </div>
         </div>
 
