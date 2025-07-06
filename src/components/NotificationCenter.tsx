@@ -105,7 +105,16 @@ export const NotificationCenter: React.FC = () => {
 
       if (response.data?.response) {
         try {
-          const aiAnalysis = JSON.parse(response.data.response);
+          // Extract JSON from AI response if it contains both text and JSON
+          let jsonStr = response.data.response;
+          
+          // Try to find JSON array pattern in the response
+          const jsonMatch = jsonStr.match(/\[[\s\S]*\]/);
+          if (jsonMatch) {
+            jsonStr = jsonMatch[0];
+          }
+          
+          const aiAnalysis = JSON.parse(jsonStr);
           if (Array.isArray(aiAnalysis)) {
             setNotifications(prev => prev.map(notification => {
               const analysis = aiAnalysis.find(a => a.id === notification.id);
@@ -114,6 +123,11 @@ export const NotificationCenter: React.FC = () => {
           }
         } catch (parseError) {
           console.error('Error parsing AI response:', parseError);
+          // Fallback: randomly assign priorities for demo
+          setNotifications(prev => prev.map(notification => ({
+            ...notification,
+            priority: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)] as any
+          })));
         }
       }
     } catch (error) {

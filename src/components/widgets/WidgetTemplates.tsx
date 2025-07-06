@@ -112,20 +112,20 @@ export const StatsGrid: React.FC<TemplateProps> = ({ title, data, size = 'large'
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((stat, index) => {
             const trend = stat.change > 0 ? 'up' : 'down';
             const TrendIcon = trend === 'up' ? TrendingUp : TrendingDown;
             
             return (
-              <div key={index} className="space-y-2 text-center p-4 rounded-lg bg-gradient-subtle">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <stat.icon className="h-5 w-5 text-primary" />
+              <div key={index} className="space-y-3 text-center p-6 rounded-xl bg-gradient-subtle border border-border/50 hover:shadow-elegant transition-all duration-300">
+                <div className="h-12 w-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-sm">
+                  <stat.icon className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.label}</div>
-                <div className={`flex items-center justify-center gap-1 text-xs ${trend === 'up' ? 'text-success' : 'text-destructive'}`}>
-                  <TrendIcon className="h-3 w-3" />
+                <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stat.value}</div>
+                <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
+                <div className={`flex items-center justify-center gap-1 text-sm font-medium ${trend === 'up' ? 'text-success' : 'text-destructive'}`}>
+                  <TrendIcon className="h-4 w-4" />
                   {Math.abs(stat.change)}%
                 </div>
               </div>
@@ -157,16 +157,16 @@ export const RecentActivity: React.FC<TemplateProps> = ({ title, data, size = 'm
       <CardContent>
         <div className="space-y-4">
           {activities.slice(0, 5).map((activity: any, index: number) => (
-            <div key={index} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors">
-              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
-                <Clock className="h-4 w-4 text-primary" />
+            <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-gradient-subtle hover:bg-accent/50 transition-colors border border-border/50">
+              <div className="h-10 w-10 bg-gradient-primary rounded-full flex items-center justify-center">
+                <Clock className="h-4 w-4 text-primary-foreground" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{activity.title}</p>
                 <p className="text-xs text-muted-foreground">{activity.time}</p>
               </div>
               {activity.status && (
-                <Badge variant={activity.status === 'completed' ? 'default' : 'secondary'}>
+                <Badge variant={activity.status === 'completed' ? 'default' : 'secondary'} className="shadow-sm">
                   {activity.status}
                 </Badge>
               )}
@@ -193,11 +193,11 @@ export const QuickActions: React.FC<TemplateProps> = ({ title, data, size = 'sma
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {actions.map((action: any, index: number) => (
             <button
               key={index}
-              className="p-3 rounded-lg bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity text-sm font-medium"
+              className="p-4 rounded-xl bg-gradient-primary text-primary-foreground hover:opacity-90 hover:scale-105 transition-all duration-200 text-sm font-medium shadow-elegant hover:shadow-glow"
               onClick={action.onClick}
             >
               {action.label}

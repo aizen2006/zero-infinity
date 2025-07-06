@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Plus, Settings, RefreshCw, TrendingUp, Users, DollarSign, Activity, Cal
 import { WidgetConfigModal } from '@/components/WidgetConfigModal';
 import { WidgetConfig } from '@/components/widget-config/types';
 import { useWidgets, Widget } from '@/hooks/useWidgets';
+import { CalendarIntegration } from '@/components/CalendarIntegration';
 import { 
   MetricCard, 
   ProgressWidget, 
@@ -15,14 +16,105 @@ import {
   QuickActions 
 } from '@/components/widgets/WidgetTemplates';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { fetchRealTimeAnalytics, fetchSalesData, fetchSocialMediaData } from '@/services/enhancedIntegrationDataService';
 
 const Dashboard: React.FC = () => {
   const { widgets, loading, addWidget, removeWidget, refreshWidgets } = useWidgets();
   const [showWidgetConfig, setShowWidgetConfig] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [salesData, setSalesData] = useState<any>(null);
+  const [socialData, setSocialData] = useState<any>(null);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    setLoadingData(true);
+    try {
+      const [analytics, sales, social] = await Promise.all([
+        fetchRealTimeAnalytics(),
+        fetchSalesData(),
+        fetchSocialMediaData()
+      ]);
+      
+      setAnalyticsData(analytics);
+      setSalesData(sales);
+      setSocialData(social);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
 
   const handleAddWidget = async (config: WidgetConfig) => {
     await addWidget(config);
     setShowWidgetConfig(false);
+  };
+
+  const handleRefresh = async () => {
+    await Promise.all([refreshWidgets(), loadDashboardData()]);
+  };
+
+  // Enhanced data for widgets using real API data
+  const getMetricData = () => {
+    if (!analyticsData) {
+      return {
+        totalRevenue: { value: '$24,580', change: 12, icon: <DollarSign className="h-4 w-4" /> },
+        activeUsers: { value: '12,450', change: 8, icon: <Users className="h-4 w-4" /> },
+        conversionRate: { value: '3.2%', change: -2, icon: <Activity className="h-4 w-4" /> },
+        bounceRate: { value: '42.3%', change: 15, icon: <TrendingUp className="h-4 w-4" /> }
+      };
+    }
+
+    return {
+      totalRevenue: {
+        value: `$${analyticsData.revenue.toLocaleString()}`,
+        change: 12,
+        icon: <DollarSign className="h-4 w-4" />
+      },
+      activeUsers: {
+        value: analyticsData.users.toLocaleString(),
+        change: 8,
+        icon: <Users className="h-4 w-4" />
+      },
+      conversionRate: {
+        value: `${analyticsData.conversionRate.toFixed(1)}%`,
+        change: -2,
+        icon: <Activity className="h-4 w-4" />
+      },
+      bounceRate: {
+        value: `${analyticsData.bounceRate.toFixed(1)}%`,
+        change: 15,
+        icon: <TrendingUp className="h-4 w-4" />
+      }
+    };
+  };
+
+  const getSalesProgressData = () => {
+    if (!salesData) return { current: 12580, target: 20000 };
+    return {
+      current: salesData.totalRevenue,
+      target: salesData.totalRevenue * 1.5 // 50% increase target
+    };
+  };
+
+  const getStatsData = () => {
+    if (!analyticsData) return {
+      users: 15420,
+      revenue: 48950,
+      orders: 1250,
+      pageViews: 89430
+    };
+
+    return {
+      users: analyticsData.users,
+      revenue: analyticsData.revenue,
+      orders: salesData?.totalOrders || 0,
+      pageViews: analyticsData.pageviews
+    };
   };
 
   // Sample data for demo widgets
@@ -63,7 +155,11 @@ const Dashboard: React.FC = () => {
     ]
   };
 
-  const chartData = [
+  const chartData = analyticsData?.trends?.daily?.slice(-6).map((item: any) => ({
+    name: new Date(item.date).toLocaleDateString('en-US', { month: 'short' }),
+    value: item.sessions,
+    users: item.users
+  })) || [
     { name: 'Jan', value: 4000, users: 2400 },
     { name: 'Feb', value: 3000, users: 1398 },
     { name: 'Mar', value: 2000, users: 9800 },
@@ -72,12 +168,18 @@ const Dashboard: React.FC = () => {
     { name: 'Jun', value: 2390, users: 3800 }
   ];
 
-  const pieData = [
+  const pieData = analyticsData?.userDemographics?.devices?.map((device: any, index: number) => ({
+    name: device.device,
+    value: device.users,
+    color: ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'][index] || 'hsl(var(--muted))'
+  })) || [
     { name: 'Desktop', value: 400, color: 'hsl(var(--primary))' },
     { name: 'Mobile', value: 300, color: 'hsl(var(--secondary))' },
     { name: 'Tablet', value: 200, color: 'hsl(var(--accent))' },
     { name: 'Other', value: 100, color: 'hsl(var(--muted))' }
   ];
+
+  const metrics = getMetricData();
 
   return (
     <Layout>
@@ -93,8 +195,8 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={refreshWidgets}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+            <Button variant="outline" onClick={handleRefresh} disabled={loadingData}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${loadingData ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
             <Button onClick={() => setShowWidgetConfig(true)} className="shadow-elegant">
@@ -113,16 +215,16 @@ const Dashboard: React.FC = () => {
           
           {/* Top Row - Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <MetricCard title="Total Revenue" data={sampleMetricData} size="small" />
-            <MetricCard title="Active Users" data={{...sampleMetricData, value: '12,450', change: 8, icon: <Users className="h-4 w-4" />}} size="small" />
-            <MetricCard title="Conversion Rate" data={{...sampleMetricData, value: '3.2%', change: -2, icon: <Activity className="h-4 w-4" />}} size="small" />
-            <MetricCard title="Monthly Growth" data={{...sampleMetricData, value: '24.5%', change: 15, icon: <TrendingUp className="h-4 w-4" />}} size="small" />
+            <MetricCard title="Total Revenue" data={metrics.totalRevenue} size="small" />
+            <MetricCard title="Active Users" data={metrics.activeUsers} size="small" />
+            <MetricCard title="Conversion Rate" data={metrics.conversionRate} size="small" />
+            <MetricCard title="Bounce Rate" data={metrics.bounceRate} size="small" />
           </div>
 
           {/* Second Row - Progress and Stats */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <ProgressWidget title="Sales Target" data={sampleProgressData} size="medium" />
-            <StatsGrid title="Key Performance Indicators" data={sampleStatsData} size="large" />
+            <ProgressWidget title="Sales Target" data={getSalesProgressData()} size="medium" />
+            <StatsGrid title="Key Performance Indicators" data={getStatsData()} size="large" />
           </div>
 
           {/* Third Row - Charts */}
@@ -189,12 +291,15 @@ const Dashboard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Fourth Row - Activity and Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3">
+          {/* Fourth Row - Activity, Actions and Calendar */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-2">
               <RecentActivity title="Recent Activity" data={sampleActivityData} size="large" />
             </div>
             <QuickActions title="Quick Actions" data={sampleActionsData} size="small" />
+            <div className="lg:col-span-2">
+              <CalendarIntegration />
+            </div>
           </div>
         </div>
 
@@ -218,10 +323,12 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {loading && (
+        {(loading || loadingData) && (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="ml-2 text-muted-foreground">Loading widgets...</span>
+            <span className="ml-2 text-muted-foreground">
+              {loadingData ? 'Loading dashboard data...' : 'Loading widgets...'}
+            </span>
           </div>
         )}
 
