@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { NotificationCenter } from './NotificationCenter';
+
 export const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
@@ -23,7 +25,9 @@ export const Header: React.FC = () => {
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between h-full px-6">
         <div className="flex items-center gap-4">
-          <img src="/lovable-uploads/b0301db9-0839-45b6-87e1-edc585b102b3.png" alt="Zero-infinity" className="h-8 w-auto" />
+          <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Dashboard
+          </h1>
         </div>
         
         <div className="flex items-center gap-4">
@@ -31,9 +35,7 @@ export const Header: React.FC = () => {
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
           
-          <Button variant="ghost" size="icon">
-            <Bell className="w-4 h-4" />
-          </Button>
+          <NotificationCenter />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

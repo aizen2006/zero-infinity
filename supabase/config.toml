@@ -4,6 +4,9 @@ project_id = "tvqwujlpgqoofmmvzxzw"
 verify_jwt = true
 
 
+[functions.openai-chat]
+verify_jwt = true
+
 [functions.google-analytics-data]
 verify_jwt = true
 

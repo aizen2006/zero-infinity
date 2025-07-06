@@ -3,17 +3,21 @@ import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Grip, Loader2 } from 'lucide-react';
+import { Plus, Grip, Loader2, BarChart3, PieChart, Activity } from 'lucide-react';
 import { WidgetConfigModal } from '@/components/WidgetConfigModal';
 import { WidgetConfig } from '@/components/widget-config/types';
-import { AIInsightWidget } from '@/components/AIInsightWidget';
-import { AIInsightExpandedView } from '@/components/AIInsightExpandedView';
 import { useWidgets, Widget } from '@/hooks/useWidgets';
+import { 
+  MetricCard, 
+  ProgressWidget, 
+  StatsGrid, 
+  RecentActivity, 
+  QuickActions 
+} from '@/components/widgets/WidgetTemplates';
 
 const Dashboard: React.FC = () => {
   const { widgets, loading, addWidget, removeWidget } = useWidgets();
   const [showWidgetConfig, setShowWidgetConfig] = useState(false);
-  const [showExpandedInsights, setShowExpandedInsights] = useState(false);
 
   const handleAddWidget = async (config: WidgetConfig) => {
     await addWidget(config);
@@ -66,12 +70,6 @@ const Dashboard: React.FC = () => {
           onOpenChange={setShowWidgetConfig}
           onSave={handleAddWidget}
         />
-
-        {showExpandedInsights && (
-          <AIInsightExpandedView 
-            onClose={() => setShowExpandedInsights(false)}
-          />
-        )}
       </div>
     </Layout>
   );
