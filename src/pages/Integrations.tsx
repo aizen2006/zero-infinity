@@ -21,24 +21,81 @@ interface Integration {
 }
 
 const integrations: Integration[] = [
+  // Google Services
   {
     id: 'google-analytics',
     name: 'Google Analytics',
     description: 'Track website traffic and user behavior',
-    category: 'Analytics',
+    category: 'Google',
     connected: false,
     logo: '📊',
     color: 'bg-orange-500'
   },
   {
-    id: 'stripe',
-    name: 'Stripe',
-    description: 'Payment processing and financial data',
-    category: 'Finance',
+    id: 'gmail',
+    name: 'Gmail',
+    description: 'Email integration and management',
+    category: 'Google',
     connected: false,
-    logo: '💳',
-    color: 'bg-purple-500'
+    logo: '📧',
+    color: 'bg-red-500'
   },
+  {
+    id: 'google-calendar',
+    name: 'Google Calendar',
+    description: 'Calendar events and scheduling',
+    category: 'Google',
+    connected: false,
+    logo: '📅',
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'google-drive',
+    name: 'Google Drive',
+    description: 'File storage and document management',
+    category: 'Google',
+    connected: false,
+    logo: '💾',
+    color: 'bg-green-600'
+  },
+  {
+    id: 'google-sheets',
+    name: 'Google Sheets',
+    description: 'Spreadsheet data integration',
+    category: 'Google',
+    connected: false,
+    logo: '📄',
+    color: 'bg-green-700'
+  },
+  {
+    id: 'youtube-analytics',
+    name: 'YouTube Analytics',
+    description: 'Video performance and audience insights',
+    category: 'Google',
+    connected: false,
+    logo: '📺',
+    color: 'bg-red-600'
+  },
+  {
+    id: 'google-ads',
+    name: 'Google Ads',
+    description: 'Advertising campaigns and performance',
+    category: 'Google',
+    connected: false,
+    logo: '🎯',
+    color: 'bg-blue-600'
+  },
+  {
+    id: 'google-search-console',
+    name: 'Search Console',
+    description: 'SEO performance and search analytics',
+    category: 'Google',
+    connected: false,
+    logo: '🔍',
+    color: 'bg-purple-600'
+  },
+  
+  // Communication & Collaboration
   {
     id: 'slack',
     name: 'Slack',
@@ -46,34 +103,74 @@ const integrations: Integration[] = [
     category: 'Communication',
     connected: false,
     logo: '💬',
-    color: 'bg-green-500'
+    color: 'bg-purple-500'
   },
   {
-    id: 'gmail',
-    name: 'Gmail',
-    description: 'Email integration and management',
+    id: 'microsoft-teams',
+    name: 'Microsoft Teams',
+    description: 'Team collaboration and meetings',
     category: 'Communication',
     connected: false,
-    logo: '📧',
-    color: 'bg-red-500'
+    logo: '👥',
+    color: 'bg-blue-700'
   },
   {
-    id: 'google-sheets',
-    name: 'Google Sheets',
-    description: 'Spreadsheet data integration',
-    category: 'Productivity',
+    id: 'zoom',
+    name: 'Zoom',
+    description: 'Video conferencing and meeting analytics',
+    category: 'Communication',
     connected: false,
-    logo: '📄',
-    color: 'bg-green-600'
+    logo: '📹',
+    color: 'bg-blue-400'
   },
   {
-    id: 'github',
-    name: 'GitHub',
-    description: 'Code repository and development metrics',
-    category: 'Development',
+    id: 'discord',
+    name: 'Discord',
+    description: 'Community management and engagement',
+    category: 'Communication',
     connected: false,
-    logo: '🐱',
-    color: 'bg-gray-500'
+    logo: '🎮',
+    color: 'bg-indigo-500'
+  },
+  
+  // CRM & Sales
+  {
+    id: 'salesforce',
+    name: 'Salesforce',
+    description: 'Customer relationship management',
+    category: 'CRM',
+    connected: false,
+    logo: '☁️',
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'hubspot',
+    name: 'HubSpot',
+    description: 'Marketing, sales, and service platform',
+    category: 'CRM',
+    connected: false,
+    logo: '🧲',
+    color: 'bg-orange-600'
+  },
+  {
+    id: 'pipedrive',
+    name: 'Pipedrive',
+    description: 'Sales pipeline management',
+    category: 'CRM',
+    connected: false,
+    logo: '🔄',
+    color: 'bg-green-500'
+  },
+  
+  // E-commerce & Finance
+  {
+    id: 'stripe',
+    name: 'Stripe',
+    description: 'Payment processing and financial data',
+    category: 'Finance',
+    connected: false,
+    logo: '💳',
+    color: 'bg-purple-700'
   },
   {
     id: 'shopify',
@@ -85,13 +182,154 @@ const integrations: Integration[] = [
     color: 'bg-emerald-500'
   },
   {
+    id: 'woocommerce',
+    name: 'WooCommerce',
+    description: 'WordPress e-commerce platform',
+    category: 'E-commerce',
+    connected: false,
+    logo: '🛒',
+    color: 'bg-purple-600'
+  },
+  {
+    id: 'paypal',
+    name: 'PayPal',
+    description: 'Payment processing and transactions',
+    category: 'Finance',
+    connected: false,
+    logo: '💰',
+    color: 'bg-blue-600'
+  },
+  
+  // Marketing & Social Media
+  {
     id: 'mailchimp',
     name: 'Mailchimp',
     description: 'Email marketing campaigns and analytics',
     category: 'Marketing',
     connected: false,
-    logo: '📧',
+    logo: '🐵',
     color: 'bg-yellow-500'
+  },
+  {
+    id: 'facebook-business',
+    name: 'Facebook Business',
+    description: 'Facebook ads and page analytics',
+    category: 'Social Media',
+    connected: false,
+    logo: '📘',
+    color: 'bg-blue-600'
+  },
+  {
+    id: 'instagram-business',
+    name: 'Instagram Business',
+    description: 'Instagram content and audience insights',
+    category: 'Social Media',
+    connected: false,
+    logo: '📸',
+    color: 'bg-pink-500'
+  },
+  {
+    id: 'twitter-business',
+    name: 'Twitter Business',
+    description: 'Twitter analytics and advertising',
+    category: 'Social Media',
+    connected: false,
+    logo: '🐦',
+    color: 'bg-sky-500'
+  },
+  {
+    id: 'linkedin-business',
+    name: 'LinkedIn Business',
+    description: 'Professional networking and B2B marketing',
+    category: 'Social Media',
+    connected: false,
+    logo: '💼',
+    color: 'bg-blue-700'
+  },
+  {
+    id: 'tiktok-business',
+    name: 'TikTok Business',
+    description: 'Short-form video marketing analytics',
+    category: 'Social Media',
+    connected: false,
+    logo: '🎵',
+    color: 'bg-black'
+  },
+  
+  // Development & Productivity
+  {
+    id: 'github',
+    name: 'GitHub',
+    description: 'Code repository and development metrics',
+    category: 'Development',
+    connected: false,
+    logo: '🐱',
+    color: 'bg-gray-800'
+  },
+  {
+    id: 'gitlab',
+    name: 'GitLab',
+    description: 'DevOps platform and CI/CD',
+    category: 'Development',
+    connected: false,
+    logo: '🦊',
+    color: 'bg-orange-500'
+  },
+  {
+    id: 'jira',
+    name: 'Jira',
+    description: 'Project management and issue tracking',
+    category: 'Productivity',
+    connected: false,
+    logo: '📊',
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'trello',
+    name: 'Trello',
+    description: 'Kanban boards and task management',
+    category: 'Productivity',
+    connected: false,
+    logo: '📋',
+    color: 'bg-blue-400'
+  },
+  {
+    id: 'notion',
+    name: 'Notion',
+    description: 'All-in-one workspace and documentation',
+    category: 'Productivity',
+    connected: false,
+    logo: '📝',
+    color: 'bg-gray-600'
+  },
+  
+  // Analytics & Monitoring
+  {
+    id: 'mixpanel',
+    name: 'Mixpanel',
+    description: 'Product analytics and user behavior',
+    category: 'Analytics',
+    connected: false,
+    logo: '📈',
+    color: 'bg-purple-500'
+  },
+  {
+    id: 'amplitude',
+    name: 'Amplitude',
+    description: 'Digital analytics and insights',
+    category: 'Analytics',
+    connected: false,
+    logo: '📊',
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'hotjar',
+    name: 'Hotjar',
+    description: 'User behavior and website heatmaps',
+    category: 'Analytics',
+    connected: false,
+    logo: '🔥',
+    color: 'bg-red-500'
   }
 ];
 

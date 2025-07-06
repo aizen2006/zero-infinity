@@ -49,8 +49,25 @@ export const NotificationCenter: React.FC = () => {
   useEffect(() => {
     if (user) {
       fetchNotifications();
+      loadGmailNotifications();
     }
   }, [user]);
+
+  const loadGmailNotifications = async () => {
+    try {
+      // Import Gmail service dynamically to avoid circular imports
+      const { analyzeGmailData, createEmailNotifications } = await import('@/services/gmailService');
+      
+      const analysis = await analyzeGmailData();
+      if (analysis && analysis.priorityEmails.length > 0) {
+        await createEmailNotifications(analysis.priorityEmails);
+        // Refresh notifications after creating email notifications
+        setTimeout(fetchNotifications, 1000);
+      }
+    } catch (error) {
+      console.error('Error loading Gmail notifications:', error);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {

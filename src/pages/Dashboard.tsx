@@ -15,6 +15,8 @@ import {
   RecentActivity, 
   QuickActions 
 } from '@/components/widgets/WidgetTemplates';
+import { GmailWidget } from '@/components/widgets/GmailWidget';
+import { AIInsightWidget } from '@/components/AIInsightWidget';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { fetchRealTimeAnalytics, fetchSalesData, fetchSocialMediaData } from '@/services/enhancedIntegrationDataService';
 
@@ -291,15 +293,24 @@ const Dashboard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Fourth Row - Activity, Actions and Calendar */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Fourth Row - Activity, Actions, Gmail and AI Insights */}
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
             <div className="lg:col-span-2">
               <RecentActivity title="Recent Activity" data={sampleActivityData} size="large" />
             </div>
             <QuickActions title="Quick Actions" data={sampleActionsData} size="small" />
             <div className="lg:col-span-2">
+              <GmailWidget size="medium" />
+            </div>
+            <AIInsightWidget size="small" />
+          </div>
+
+          {/* Fifth Row - Calendar and AI Insights Expanded */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
               <CalendarIntegration />
             </div>
+            <AIInsightWidget size="medium" />
           </div>
         </div>
 
