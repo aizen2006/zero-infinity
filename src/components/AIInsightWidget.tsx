@@ -187,25 +187,6 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
     }
   };
 
-  if (loading) {
-    return (
-      <Card className={`${sizeClasses[size]} ${className} animate-pulse shadow-elegant`}>
-        <CardHeader>
-          <div className="h-6 bg-muted rounded w-32"></div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="space-y-2">
-                <div className="h-4 bg-muted rounded w-full"></div>
-                <div className="h-3 bg-muted rounded w-3/4"></div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className={`${sizeClasses[size]} ${className} shadow-elegant hover:shadow-glow transition-all duration-300 border-l-4 border-l-primary bg-gradient-subtle`}>
