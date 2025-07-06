@@ -4,7 +4,7 @@ project_id = "tvqwujlpgqoofmmvzxzw"
 verify_jwt = true
 
 
-[functions.openai-chat]
+[functions.gemini-chat]
 verify_jwt = true
 
 [functions.google-analytics-data]

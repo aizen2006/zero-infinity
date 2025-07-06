@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,8 +38,8 @@ serve(async (req) => {
 
     const { messages, task = 'general' } = await req.json();
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!geminiApiKey) {
+      throw new Error('Gemini API key not configured');
     }
 
     const systemPrompts = {
@@ -49,38 +49,43 @@ serve(async (req) => {
       autoResponse: 'You are an AI assistant that drafts professional responses to messages and emails. Create appropriate, polite, and contextually relevant responses.'
     };
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompts[task as keyof typeof systemPrompts] || systemPrompts.general },
-          ...messages
+        contents: [
+          {
+            parts: [
+              {
+                text: `${systemPrompts[task as keyof typeof systemPrompts] || systemPrompts.general}\n\n${messages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`
+              }
+            ]
+          }
         ],
-        temperature: 0.7,
-        max_tokens: 1000,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        }
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+      throw new Error(`Gemini API error: ${response.statusText}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.candidates[0].content.parts[0].text;
 
     return new Response(JSON.stringify({ 
       response: aiResponse,
-      usage: data.usage 
+      usage: data.usageMetadata || {} 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in openai-chat function:', error);
+    console.error('Error in gemini-chat function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
