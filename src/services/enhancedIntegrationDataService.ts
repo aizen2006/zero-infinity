@@ -223,13 +223,14 @@ const aggregateSocialMediaData = (socialDataArray: any[]): SocialMediaData => {
     linkedin: { followers: 0, engagement: 0, impressions: 0 }
   });
 
-  const totalFollowers = Object.values(platforms).reduce((sum: number, platform: any) => sum + (platform?.followers || 0), 0);
-  const totalEngagement = Object.values(platforms).reduce((sum: number, platform: any) => sum + (platform?.engagement || 0), 0);
+  const platformValues = Object.values(platforms) as Array<{ followers?: number; engagement?: number }>;
+  const totalFollowers = platformValues.reduce((sum: number, platform) => sum + (platform.followers || 0), 0);
+  const totalEngagement = platformValues.reduce((sum: number, platform) => sum + (platform.engagement || 0), 0);
 
   return {
     platforms,
-    totalFollowers: totalFollowers,
-    totalEngagement: totalEngagement,
+    totalFollowers,
+    totalEngagement,
     topPosts: socialDataArray.flatMap(d => d?.topPosts || []).slice(0, 10),
     demographics: socialDataArray[0]?.demographics || {
       ageGroups: [],
