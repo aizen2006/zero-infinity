@@ -190,29 +190,6 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
 
   return (
     <Card className={`${sizeClasses[size]} ${className} shadow-elegant hover:shadow-glow transition-all duration-300 border-l-4 border-l-primary bg-gradient-subtle`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
-          AI Insights
-        </CardTitle>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">
-            {insights.filter(i => !i.isRead).length} new
-          </Badge>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={generateNewInsights}
-            disabled={generating}
-            className="text-xs"
-          >
-            <RefreshCw className={`w-3 h-3 mr-1 ${generating ? 'animate-spin' : ''}`} />
-            {generating ? 'Generating...' : 'Generate'}
-          </Button>
-        </div>
-      </CardHeader>
       <CardContent>
         {insights.length === 0 ? (
           <div className="text-center py-6">
