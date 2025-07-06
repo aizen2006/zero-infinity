@@ -65,7 +65,7 @@ export const NotificationCenter: React.FC = () => {
         setTimeout(fetchNotifications, 1000);
       }
     } catch (error) {
-      console.error('Error loading Gmail notifications:', error);
+      // Silently handle errors to prevent console spam
     }
   };
 

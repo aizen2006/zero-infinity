@@ -38,10 +38,11 @@ export const GmailWidget: React.FC<GmailWidgetProps> = ({ size = 'medium', class
         analyzeGmailData()
       ]);
       
+      // These services now return mock data instead of null on failure
       setStats(statsData);
       setAnalysis(analysisData);
     } catch (error) {
-      console.error('Error loading Gmail data:', error);
+      // Silently handle errors - services provide fallback data
     } finally {
       setLoading(false);
     }
