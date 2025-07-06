@@ -88,7 +88,7 @@ export const NotificationCenter: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No session');
 
-      const response = await supabase.functions.invoke('openai-chat', {
+      const response = await supabase.functions.invoke('gemini-chat', {
         body: {
           messages: [
             {
@@ -130,7 +130,7 @@ export const NotificationCenter: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No session');
 
-      const response = await supabase.functions.invoke('openai-chat', {
+      const response = await supabase.functions.invoke('gemini-chat', {
         body: {
           messages: [
             {

@@ -3,7 +3,6 @@ project_id = "tvqwujlpgqoofmmvzxzw"
 [functions.google-analytics-auth]
 verify_jwt = true
 
-
 [functions.gemini-chat]
 verify_jwt = true
 
@@ -21,3 +20,6 @@ verify_jwt = true
 
 [functions.oauth-callback]
 verify_jwt = false
+
+[functions.sync-google-calendar]
+verify_jwt = true
