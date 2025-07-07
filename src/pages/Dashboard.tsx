@@ -10,7 +10,7 @@ import { useWidgets, Widget } from '@/hooks/useWidgets';
 import { CalendarIntegration } from '@/components/CalendarIntegration';
 import { MetricCard, ProgressWidget, StatsGrid, RecentActivity, QuickActions } from '@/components/widgets/WidgetTemplates';
 import { GmailWidget } from '@/components/widgets/GmailWidget';
-import { AIInsightWidget } from '@/components/AIInsightWidget';
+
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { fetchRealTimeAnalytics, fetchSalesData, fetchSocialMediaData } from '@/services/enhancedIntegrationDataService';
 const Dashboard: React.FC = () => {
@@ -242,7 +242,7 @@ const Dashboard: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold text-foreground mb-2">
               Business Dashboard
             </h1>
             <p className="text-muted-foreground text-lg">
@@ -338,24 +338,18 @@ const Dashboard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Fourth Row - Activity, Actions, Gmail and AI Insights */}
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+          {/* Fourth Row - Activity, Actions, and Gmail */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-2">
               <RecentActivity title="Recent Activity" data={sampleActivityData} size="large" />
             </div>
             <QuickActions title="Quick Actions" data={sampleActionsData} size="small" />
-            <div className="lg:col-span-2">
-              <GmailWidget size="medium" />
-            </div>
-            <AIInsightWidget size="small" />
+            <GmailWidget size="medium" />
           </div>
 
-          {/* Fifth Row - Calendar and AI Insights Expanded */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <CalendarIntegration />
-            </div>
-            <AIInsightWidget size="medium" />
+          {/* Fifth Row - Calendar */}
+          <div className="grid grid-cols-1 gap-6">
+            <CalendarIntegration />
           </div>
         </div>
 
@@ -404,7 +398,7 @@ const EnhancedWidgetCard: React.FC<EnhancedWidgetCardProps> = ({
   };
   return <Card className={`group relative ${getGridSpan()} shadow-elegant hover:shadow-glow transition-all duration-300 border-l-4 border-l-primary`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium bg-gradient-primary bg-clip-text text-transparent">
+        <CardTitle className="text-sm font-medium text-foreground">
           {widget.title}
         </CardTitle>
         <div className="flex items-center gap-2">
@@ -416,7 +410,7 @@ const EnhancedWidgetCard: React.FC<EnhancedWidgetCardProps> = ({
       </CardHeader>
       <CardContent>
         {widget.type === 'stat' && <div className="space-y-2">
-            <div className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold text-foreground">
               {widget.data.value}
             </div>
             <div className="flex items-center gap-2">
