@@ -186,8 +186,8 @@ export const QuickActions: React.FC<TemplateProps> = ({
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          {actions.map((action: any, index: number) => <button key={index} className="p-4 rounded-xl bg-gradient-primary text-primary-foreground hover:opacity-90 hover:scale-105 transition-all duration-200 text-sm font-medium shadow-elegant hover:shadow-glow" onClick={action.onClick}>
+        <div className="grid grid-cols-1 gap-2">
+          {actions.map((action: any, index: number) => <button key={index} className="p-3 rounded-lg bg-gradient-primary text-primary-foreground hover:opacity-90 hover:scale-105 transition-all duration-200 text-xs font-medium shadow-elegant hover:shadow-glow text-center" onClick={action.onClick}>
               {action.label}
             </button>)}
         </div>
