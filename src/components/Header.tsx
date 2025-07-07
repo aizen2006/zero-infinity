@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NotificationCenter } from './NotificationCenter';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 export const Header: React.FC = () => {
   const {
     theme,
@@ -22,6 +23,9 @@ export const Header: React.FC = () => {
   } = useProfile();
   return <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between h-full px-6">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+        </div>
         
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={toggleTheme}>

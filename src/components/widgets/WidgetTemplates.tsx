@@ -32,7 +32,7 @@ export const MetricCard: React.FC<TemplateProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold primary bg-clip-text text-transparent">
+        <div className="text-3xl font-bold text-foreground">
           {data.value}
         </div>
         <div className="flex items-center gap-2 mt-2">
@@ -122,7 +122,7 @@ export const StatsGrid: React.FC<TemplateProps> = ({
                 <div className="h-12 w-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-sm">
                   <stat.icon className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <div className="text-2xl font-bold text-2xl bg-clip-text text-transparent">{stat.value}</div>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
                 <div className={`flex items-center justify-center gap-1 text-sm font-medium ${trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                   <TrendIcon className="h-4 w-4" />
@@ -185,9 +185,9 @@ export const QuickActions: React.FC<TemplateProps> = ({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="grid grid-cols-1 gap-2">
-          {actions.map((action: any, index: number) => <button key={index} className="p-3 rounded-lg bg-gradient-primary text-primary-foreground hover:opacity-90 hover:scale-105 transition-all duration-200 text-xs font-medium shadow-elegant hover:shadow-glow text-center" onClick={action.onClick}>
+          {actions.map((action: any, index: number) => <button key={index} className="p-2 rounded-lg bg-gradient-primary text-primary-foreground hover:opacity-90 hover:scale-105 transition-all duration-200 text-xs font-medium shadow-elegant hover:shadow-glow text-center" onClick={action.onClick}>
               {action.label}
             </button>)}
         </div>

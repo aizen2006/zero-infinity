@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Puzzle, 
@@ -10,7 +10,17 @@ import {
   Settings,
   Zap
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -21,43 +31,50 @@ const navItems = [
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-export const Sidebar: React.FC = () => {
+export const AppSidebar: React.FC = () => {
+  const { state } = useSidebar();
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  const isActive = (path: string) => currentPath === path;
+  const isCollapsed = state === "collapsed";
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/50";
+
   return (
-    <div className="w-64 bg-card border-r border-border flex flex-col">
-      <div className="p-6 border-b border-border">
+    <Sidebar collapsible="icon">
+      <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <Zap className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-            ZERO
-          </span>
+          {!isCollapsed && (
+            <span className="text-xl font-bold text-gradient-primary">
+              ZERO
+            </span>
+          )}
         </div>
       </div>
-      
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {navItems.map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                    'hover:bg-accent hover:text-accent-foreground',
-                    isActive 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'text-muted-foreground'
-                  )
-                }
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.to}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.to} end className={getNavCls}>
+                      <item.icon className="h-4 w-4" />
+                      {!isCollapsed && <span>{item.label}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 };
