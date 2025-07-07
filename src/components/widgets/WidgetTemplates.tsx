@@ -32,7 +32,7 @@ export const MetricCard: React.FC<TemplateProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <div className="text-3xl font-bold primary bg-clip-text text-transparent">
           {data.value}
         </div>
         <div className="flex items-center gap-2 mt-2">
