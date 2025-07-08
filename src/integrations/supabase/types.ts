@@ -358,7 +358,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      send_notification_email_db: {
+        Args: {
+          user_email: string
+          email_subject: string
+          email_content: string
+          email_type?: string
+          notification_id?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

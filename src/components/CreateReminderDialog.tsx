@@ -17,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface CreateReminderDialogProps {
   open: boolean;
@@ -29,31 +32,82 @@ export const CreateReminderDialog: React.FC<CreateReminderDialogProps> = ({
   onOpenChange,
   onAdd
 }) => {
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [trigger, setTrigger] = useState('');
   const [frequency, setFrequency] = useState('');
   const [method, setMethod] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !trigger || !frequency || !method) return;
+    if (!title || !trigger || !frequency || !method || !user) return;
 
-    onAdd({
-      title,
-      description,
-      trigger,
-      frequency,
-      method,
-      active: true
-    });
+    setIsSubmitting(true);
 
-    setTitle('');
-    setDescription('');
-    setTrigger('');
-    setFrequency('');
-    setMethod('');
-    onOpenChange(false);
+    try {
+      // Create trigger config based on frequency
+      const triggerConfig = {
+        condition: trigger,
+        frequency: frequency,
+        notificationChannels: method === 'both' ? ['email', 'in-app'] : [method]
+      };
+
+      // Save to database
+      const { data, error } = await supabase
+        .from('reminders')
+        .insert({
+          user_id: user.id,
+          title,
+          description,
+          trigger_type: frequency,
+          trigger_config: triggerConfig,
+          notification_channels: method === 'both' ? ['email', 'in-app'] : [method],
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Send confirmation email if email notifications are enabled
+      if (method === 'email' || method === 'both') {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.functions.invoke('send-notification-email', {
+            body: {
+              to: user.email,
+              subject: `✅ Reminder Created: ${title}`,
+              content: `Your reminder "${title}" has been successfully created and is now active.\n\nTrigger: ${trigger}\nFrequency: ${frequency}\nMethod: ${method}`,
+              type: 'reminder'
+            },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            }
+          });
+        }
+      }
+
+      toast.success('Reminder created successfully!');
+      
+      // Call the onAdd callback with the new reminder
+      onAdd(data);
+
+      // Reset form
+      setTitle('');
+      setDescription('');
+      setTrigger('');
+      setFrequency('');
+      setMethod('');
+      onOpenChange(false);
+
+    } catch (error) {
+      console.error('Error creating reminder:', error);
+      toast.error('Failed to create reminder. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -127,7 +181,9 @@ export const CreateReminderDialog: React.FC<CreateReminderDialogProps> = ({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Reminder</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Reminder'}
+            </Button>
           </div>
         </form>
       </DialogContent>

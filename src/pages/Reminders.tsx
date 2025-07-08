@@ -1,14 +1,29 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Bell, Plus, Clock, Mail, Smartphone } from 'lucide-react';
+import { Bell, Plus, Clock, Mail, Smartphone, Loader2 } from 'lucide-react';
 import { CreateReminderDialog } from '@/components/CreateReminderDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface Reminder {
+  id: string;
+  title: string;
+  description: string | null;
+  trigger_type: string;
+  trigger_config: any;
+  notification_channels: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ReminderDisplay {
   id: string;
   title: string;
   description: string;
@@ -16,60 +31,119 @@ interface Reminder {
   frequency: string;
   method: 'email' | 'in-app' | 'both';
   active: boolean;
-  lastTriggered?: string;
-  nextTrigger?: string;
+  createdAt: string;
 }
 
-const mockReminders: Reminder[] = [
-  {
-    id: '1',
-    title: 'High Priority Tasks',
-    description: 'Send reminder when tasks are overdue for more than 3 days',
-    trigger: 'Task overdue > 3 days',
-    frequency: 'Daily at 9:00 AM',
-    method: 'both',
-    active: true,
-    lastTriggered: '2024-01-15',
-    nextTrigger: '2024-01-16'
-  },
-  {
-    id: '2',
-    title: 'Revenue Milestone',
-    description: 'Notify when monthly revenue exceeds $10,000',
-    trigger: 'Monthly revenue > $10,000',
-    frequency: 'When condition is met',
-    method: 'email',
-    active: true,
-    nextTrigger: 'Next month'
-  },
-  {
-    id: '3',
-    title: 'Customer Support Queue',
-    description: 'Alert when support queue has more than 20 pending tickets',
-    trigger: 'Support tickets > 20',
-    frequency: 'Real-time',
-    method: 'in-app',
-    active: false,
-    lastTriggered: '2024-01-10'
-  }
-];
-
 const Reminders: React.FC = () => {
-  const [reminders, setReminders] = useState<Reminder[]>(mockReminders);
+  const { user } = useAuth();
+  const [reminders, setReminders] = useState<ReminderDisplay[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [emailsSent, setEmailsSent] = useState(0);
 
-  const toggleReminder = (id: string) => {
-    setReminders(reminders.map(reminder =>
-      reminder.id === id ? { ...reminder, active: !reminder.active } : reminder
-    ));
+  useEffect(() => {
+    if (user) {
+      fetchReminders();
+      fetchEmailStats();
+    }
+  }, [user]);
+
+  const fetchReminders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reminders')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transform database data to display format
+      const displayReminders: ReminderDisplay[] = data.map((reminder: Reminder) => ({
+        id: reminder.id,
+        title: reminder.title,
+        description: reminder.description || '',
+        trigger: reminder.trigger_config?.condition || 'No trigger defined',
+        frequency: reminder.trigger_type,
+        method: reminder.notification_channels.includes('email') && reminder.notification_channels.includes('in-app') 
+          ? 'both' 
+          : reminder.notification_channels.includes('email') 
+            ? 'email' 
+            : 'in-app',
+        active: reminder.is_active,
+        createdAt: reminder.created_at
+      }));
+
+      setReminders(displayReminders);
+    } catch (error) {
+      console.error('Error fetching reminders:', error);
+      toast.error('Failed to fetch reminders');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const addReminder = (reminder: Omit<Reminder, 'id'>) => {
-    const newReminder = {
-      ...reminder,
-      id: Date.now().toString()
+  const fetchEmailStats = async () => {
+    try {
+      // Get email notifications count from this week
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('type', 'reminder')
+        .gte('created_at', weekAgo.toISOString());
+
+      if (error) throw error;
+      setEmailsSent(data.length);
+    } catch (error) {
+      console.error('Error fetching email stats:', error);
+    }
+  };
+
+  const toggleReminder = async (id: string) => {
+    try {
+      const reminder = reminders.find(r => r.id === id);
+      if (!reminder) return;
+
+      const { error } = await supabase
+        .from('reminders')
+        .update({ is_active: !reminder.active })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setReminders(reminders.map(r =>
+        r.id === id ? { ...r, active: !r.active } : r
+      ));
+
+      toast.success(`Reminder ${!reminder.active ? 'activated' : 'deactivated'}`);
+    } catch (error) {
+      console.error('Error toggling reminder:', error);
+      toast.error('Failed to update reminder');
+    }
+  };
+
+  const addReminder = (reminder: Reminder) => {
+    // Transform database reminder to display format
+    const displayReminder: ReminderDisplay = {
+      id: reminder.id,
+      title: reminder.title,
+      description: reminder.description || '',
+      trigger: reminder.trigger_config?.condition || 'No trigger defined',
+      frequency: reminder.trigger_type,
+      method: reminder.notification_channels.includes('email') && reminder.notification_channels.includes('in-app') 
+        ? 'both' 
+        : reminder.notification_channels.includes('email') 
+          ? 'email' 
+          : 'in-app',
+      active: reminder.is_active,
+      createdAt: reminder.created_at
     };
-    setReminders([...reminders, newReminder]);
+    
+    setReminders([displayReminder, ...reminders]);
   };
 
   const activeCount = reminders.filter(r => r.active).length;
@@ -87,7 +161,7 @@ const Reminders: React.FC = () => {
               Set up automated reminders based on your data
             </p>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)}>
+          <Button onClick={() => setShowCreateDialog(true)} disabled={loading}>
             <Plus className="w-4 h-4 mr-2" />
             Create Reminder
           </Button>
@@ -98,7 +172,9 @@ const Reminders: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center gap-2">
                 <Bell className="w-5 h-5 text-green-500" />
-                <div className="text-2xl font-bold">{activeCount}</div>
+                <div className="text-2xl font-bold">
+                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : activeCount}
+                </div>
               </div>
               <p className="text-sm text-muted-foreground">Active Reminders</p>
             </CardContent>
@@ -107,7 +183,9 @@ const Reminders: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-blue-500" />
-                <div className="text-2xl font-bold">{reminders.length}</div>
+                <div className="text-2xl font-bold">
+                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : reminders.length}
+                </div>
               </div>
               <p className="text-sm text-muted-foreground">Total Reminders</p>
             </CardContent>
@@ -116,76 +194,95 @@ const Reminders: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-purple-500" />
-                <div className="text-2xl font-bold">24</div>
+                <div className="text-2xl font-bold">
+                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : emailsSent}
+                </div>
               </div>
               <p className="text-sm text-muted-foreground">Sent This Week</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-4">
-          {reminders.map((reminder) => (
-            <Card key={reminder.id} className="group">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <CardTitle className="text-lg">{reminder.title}</CardTitle>
-                      <Badge 
-                        variant={reminder.active ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {reminder.active ? 'Active' : 'Inactive'}
-                      </Badge>
+        {loading ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span className="ml-2 text-muted-foreground">Loading reminders...</span>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reminders.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Bell className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No reminders yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Create your first reminder to get started with automated notifications.
+                  </p>
+                  <Button onClick={() => setShowCreateDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Reminder
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              reminders.map((reminder) => (
+                <Card key={reminder.id} className="group">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <CardTitle className="text-lg">{reminder.title}</CardTitle>
+                          <Badge 
+                            variant={reminder.active ? 'default' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {reminder.active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{reminder.description}</p>
+                      </div>
+                      <Switch
+                        checked={reminder.active}
+                        onCheckedChange={() => toggleReminder(reminder.id)}
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground">{reminder.description}</p>
-                  </div>
-                  <Switch
-                    checked={reminder.active}
-                    onCheckedChange={() => toggleReminder(reminder.id)}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <div className="text-sm font-medium">Trigger</div>
-                    <div className="text-sm text-muted-foreground">{reminder.trigger}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Frequency</div>
-                    <div className="text-sm text-muted-foreground">{reminder.frequency}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Method</div>
-                    <div className="flex items-center gap-1">
-                      {(reminder.method === 'email' || reminder.method === 'both') && (
-                        <Mail className="w-4 h-4 text-blue-500" />
-                      )}
-                      {(reminder.method === 'in-app' || reminder.method === 'both') && (
-                        <Smartphone className="w-4 h-4 text-green-500" />
-                      )}
-                      <span className="text-sm text-muted-foreground capitalize">
-                        {reminder.method}
-                      </span>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <div className="text-sm font-medium">Trigger</div>
+                        <div className="text-sm text-muted-foreground">{reminder.trigger}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">Frequency</div>
+                        <div className="text-sm text-muted-foreground">{reminder.frequency}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">Method</div>
+                        <div className="flex items-center gap-1">
+                          {(reminder.method === 'email' || reminder.method === 'both') && (
+                            <Mail className="w-4 h-4 text-blue-500" />
+                          )}
+                          {(reminder.method === 'in-app' || reminder.method === 'both') && (
+                            <Smartphone className="w-4 h-4 text-green-500" />
+                          )}
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {reminder.method}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                {(reminder.lastTriggered || reminder.nextTrigger) && (
-                  <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
-                    {reminder.lastTriggered && (
-                      <span>Last triggered: {reminder.lastTriggered}</span>
-                    )}
-                    {reminder.nextTrigger && (
-                      <span>Next trigger: {reminder.nextTrigger}</span>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+                      <span>Created: {new Date(reminder.createdAt).toLocaleDateString()}</span>
+                      <span>Status: {reminder.active ? 'Active' : 'Inactive'}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
 
         <CreateReminderDialog
           open={showCreateDialog}
