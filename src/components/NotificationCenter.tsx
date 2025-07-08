@@ -184,6 +184,37 @@ export const NotificationCenter: React.FC = () => {
     }
   };
 
+  const sendEmailResponse = async (notification: Notification, responseContent: string) => {
+    if (!user) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
+
+      await supabase.functions.invoke('send-notification-email', {
+        body: {
+          to: user.email,
+          subject: `Re: ${notification.title}`,
+          content: responseContent,
+          type: 'response',
+          notificationId: notification.id
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        }
+      });
+
+      // Clear the response text after sending
+      setResponseText('');
+      setSelectedNotification(null);
+      
+      // Show success message (you might want to add a toast here)
+      console.log('Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  };
+
   const markAsRead = async (notificationId: string) => {
     try {
       await supabase
@@ -371,14 +402,25 @@ export const NotificationCenter: React.FC = () => {
                     className="text-sm"
                     rows={3}
                   />
-                  <div className="flex gap-2">
-                    <Button size="sm" className="text-xs">
-                      Send Response
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Edit & Send
-                    </Button>
-                  </div>
+                   <div className="flex gap-2">
+                     <Button 
+                       size="sm" 
+                       className="text-xs"
+                       onClick={() => selectedNotification && sendEmailResponse(selectedNotification, responseText)}
+                       disabled={!responseText.trim()}
+                     >
+                       <Send className="w-3 h-3 mr-1" />
+                       Send Email
+                     </Button>
+                     <Button 
+                       variant="outline" 
+                       size="sm" 
+                       className="text-xs"
+                       onClick={() => setResponseText('')}
+                     >
+                       Clear
+                     </Button>
+                   </div>
                 </div>
               </div>
             )}
