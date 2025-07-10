@@ -48,7 +48,7 @@ const getWelcomeEmailTemplate = (displayName: string) => {
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://tvqwujlpgqoofmmvzxzw.supabase.co/" 
+          <a href="https://2660e35e-abb3-4d1e-ad5d-6769c5de2143.lovableproject.com/" 
              style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                     color: white; 
                     padding: 15px 30px; 
@@ -97,6 +97,8 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const { record } = await req.json();
+    
+    console.log('Welcome email triggered for user:', record?.id);
     
     if (!record || !record.email) {
       throw new Error('No user record provided');

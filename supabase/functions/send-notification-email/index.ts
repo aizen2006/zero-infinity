@@ -86,24 +86,35 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Verify authentication
+    // Check if this is a service role call (from database) or user call
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+    const isServiceCall = authHeader?.includes(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '');
+    
+    let user = null;
+    
+    if (!isServiceCall) {
+      // Verify user authentication for frontend calls
+      if (!authHeader) {
+        throw new Error('No authorization header');
+      }
+
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      );
+
+      const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+
+      if (authError || !authUser) {
+        throw new Error('Invalid user token');
+      }
+      
+      user = authUser;
     }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      throw new Error('Invalid user token');
-    }
+    
+    console.log('Email request - Service call:', isServiceCall, 'User ID:', user?.id);
 
     const { to, subject, content, type, notificationId }: EmailRequest = await req.json();
 
