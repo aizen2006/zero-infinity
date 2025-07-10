@@ -46,7 +46,51 @@ serve(async (req) => {
       throw new Error('Gmail integration not found');
     }
 
-    const accessToken = integration.oauth_token;
+    // Check if token is expired and refresh if needed
+    let accessToken = integration.oauth_token;
+    const tokenExpiresAt = new Date(integration.token_expires_at);
+    const now = new Date();
+    
+    if (now >= tokenExpiresAt) {
+      console.log('Token expired, refreshing...');
+      try {
+        const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            client_id: Deno.env.get('GOOGLE_CLIENT_ID') || '',
+            client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET') || '',
+            refresh_token: integration.refresh_token,
+            grant_type: 'refresh_token',
+          }),
+        });
+
+        if (!refreshResponse.ok) {
+          throw new Error(`Token refresh failed: ${refreshResponse.statusText}`);
+        }
+
+        const refreshData = await refreshResponse.json();
+        accessToken = refreshData.access_token;
+        
+        // Update the integration with new token
+        const newExpiresAt = new Date(Date.now() + refreshData.expires_in * 1000);
+        await supabaseClient
+          .from('integrations')
+          .update({
+            oauth_token: accessToken,
+            token_expires_at: newExpiresAt.toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', integration.id);
+        
+        console.log('Token refreshed successfully');
+      } catch (refreshError) {
+        console.error('Failed to refresh token:', refreshError);
+        throw new Error('Gmail authentication expired. Please reconnect your Gmail account.');
+      }
+    }
 
     switch (action) {
       case 'fetch_emails':
