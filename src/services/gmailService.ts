@@ -59,11 +59,14 @@ export const fetchGmailEmails = async (params?: {
 
 export const analyzeGmailData = async (): Promise<GmailAnalysis | null> => {
   try {
+    console.log('analyzeGmailData: Starting analysis...');
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
+      console.log('analyzeGmailData: No session found, using mock data');
       return generateMockGmailAnalysis();
     }
 
+    console.log('analyzeGmailData: Session found, calling edge function...');
     const { data, error } = await supabase.functions.invoke('gmail-integration', {
       body: {
         action: 'analyze_emails'
@@ -74,10 +77,13 @@ export const analyzeGmailData = async (): Promise<GmailAnalysis | null> => {
     });
 
     if (error) {
+      console.error('analyzeGmailData: Edge function error:', error);
       return generateMockGmailAnalysis();
     }
+    console.log('analyzeGmailData: Success, returning data');
     return data;
   } catch (error) {
+    console.error('analyzeGmailData: Caught error:', error);
     // Silently fall back to mock data instead of logging errors
     return generateMockGmailAnalysis();
   }
