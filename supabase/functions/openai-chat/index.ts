@@ -78,7 +78,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       response: aiResponse,
-      usage: data.usageMetadata || {} 
+      usage: data.usage || {} 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
