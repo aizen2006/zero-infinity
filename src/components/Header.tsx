@@ -22,12 +22,12 @@ export const Header: React.FC = () => {
     avatarUrl
   } = useProfile();
   return <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center justify-between h-full px-6">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between h-full px-3 md:px-6">
+        <div className="flex items-center gap-2 md:gap-4">
           <SidebarTrigger />
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>

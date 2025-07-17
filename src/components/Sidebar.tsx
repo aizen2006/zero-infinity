@@ -42,7 +42,7 @@ export const AppSidebar: React.FC = () => {
     isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/50";
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="md:flex">
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">

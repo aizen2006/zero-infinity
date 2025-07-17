@@ -114,16 +114,16 @@ export const StatsGrid: React.FC<TemplateProps> = ({
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           {stats.map((stat, index) => {
           const trend = stat.change > 0 ? 'up' : 'down';
           const TrendIcon = trend === 'up' ? TrendingUp : TrendingDown;
-          return <div key={index} className="space-y-3 text-center p-6 rounded-xl bg-gradient-subtle border border-border/50 hover:shadow-elegant transition-all duration-300">
-                <div className="h-12 w-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-sm">
-                  <stat.icon className="h-6 w-6 text-primary-foreground" />
+          return <div key={index} className="space-y-2 md:space-y-3 text-center p-3 md:p-6 rounded-xl bg-gradient-subtle border border-border/50 hover:shadow-elegant transition-all duration-300">
+                <div className="h-8 w-8 md:h-12 md:w-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-sm">
+                  <stat.icon className="h-4 w-4 md:h-6 md:w-6 text-primary-foreground" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
+                <div className="text-lg md:text-2xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-xs md:text-sm font-medium text-muted-foreground">{stat.label}</div>
                 <div className={`flex items-center justify-center gap-1 text-sm font-medium ${trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                   <TrendIcon className="h-4 w-4" />
                   {Math.abs(stat.change)}%
@@ -187,7 +187,7 @@ export const QuickActions: React.FC<TemplateProps> = ({
       </CardHeader>
       <CardContent className="p-4">
         <div className="grid grid-cols-1 gap-2">
-          {actions.map((action: any, index: number) => <button key={index} className="p-2 rounded-lg bg-gradient-primary text-primary-foreground hover:opacity-90 hover:scale-105 transition-all duration-200 text-xs font-medium shadow-elegant hover:shadow-glow text-center" onClick={action.onClick}>
+          {actions.map((action: any, index: number) => <button key={index} className="p-2 md:p-3 rounded-lg bg-gradient-primary text-primary-foreground hover:opacity-90 hover:scale-105 transition-all duration-200 text-xs md:text-sm font-medium shadow-elegant hover:shadow-glow text-center" onClick={action.onClick}>
               {action.label}
             </button>)}
         </div>

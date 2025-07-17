@@ -129,6 +129,20 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    /* Prevent horizontal scrolling on mobile */
+    overflow-x: hidden;
+  }
+  
+  /* Improve touch targets for mobile */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better scrolling on mobile */
+  html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
   }
 }
 
@@ -154,5 +168,26 @@ All colors MUST be HSL.
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    .mobile-padding {
+      padding: 0.75rem;
+    }
+    
+    .mobile-gap {
+      gap: 0.75rem;
+    }
+    
+    /* Ensure cards are touch-friendly */
+    .card {
+      min-height: 100px;
+    }
+    
+    /* Improve chart readability on mobile */
+    .recharts-wrapper {
+      font-size: 12px;
+    }
   }
 }

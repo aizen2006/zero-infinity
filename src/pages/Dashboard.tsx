@@ -240,23 +240,23 @@ const Dashboard: React.FC = () => {
   return <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
               Business Dashboard
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-sm md:text-lg">
               Monitor all your business metrics in one place with AI-powered insights
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={handleRefresh} disabled={loadingData}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loadingData ? 'animate-spin' : ''}`} />
-              Refresh
+          <div className="flex items-center gap-2 md:gap-3">
+            <Button variant="outline" onClick={handleRefresh} disabled={loadingData} size="sm">
+              <RefreshCw className={`w-4 h-4 ${loadingData ? 'animate-spin' : ''} md:mr-2`} />
+              <span className="hidden md:inline">Refresh</span>
             </Button>
-            <Button onClick={() => setShowWidgetConfig(true)} className="shadow-elegant">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Widget
+            <Button onClick={() => setShowWidgetConfig(true)} className="shadow-elegant" size="sm">
+              <Plus className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Add Widget</span>
             </Button>
           </div>
         </div>
@@ -269,7 +269,7 @@ const Dashboard: React.FC = () => {
           </div>
           
           {/* Top Row - Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <MetricCard title="Total Revenue" data={metrics.totalRevenue} size="small" />
             <MetricCard title="Active Users" data={metrics.activeUsers} size="small" />
             <MetricCard title="Conversion Rate" data={metrics.conversionRate} size="small" />
@@ -277,13 +277,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Second Row - Progress and Stats */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             <ProgressWidget title="Sales Target" data={getSalesProgressData()} size="medium" />
             <StatsGrid title="Key Performance Indicators" data={getStatsData()} size="large" />
           </div>
 
           {/* Third Row - Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <Card className="shadow-elegant hover:shadow-glow transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -339,12 +339,16 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Fourth Row - Activity, Actions, and Gmail */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="md:col-span-2 lg:col-span-2">
               <RecentActivity title="Recent Activity" data={sampleActivityData} size="large" />
             </div>
-            <QuickActions title="Quick Actions" data={sampleActionsData} size="small" />
-            <GmailWidget size="medium" />
+            <div className="md:col-span-1">
+              <QuickActions title="Quick Actions" data={sampleActionsData} size="small" />
+            </div>
+            <div className="md:col-span-1">
+              <GmailWidget size="medium" />
+            </div>
           </div>
 
           {/* Fifth Row - Calendar */}
@@ -360,7 +364,7 @@ const Dashboard: React.FC = () => {
               <Badge variant="outline">{widgets.length} widgets</Badge>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {widgets.map(widget => <EnhancedWidgetCard key={widget.id} widget={widget} onRemove={() => removeWidget(widget.id)} />)}
             </div>
           </div>}
