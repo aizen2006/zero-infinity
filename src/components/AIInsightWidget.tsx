@@ -82,8 +82,8 @@ export const AIInsightWidget: React.FC<AIInsightWidgetProps> = ({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No session');
 
-      // Generate insights using Gemini AI
-      const response = await supabase.functions.invoke('gemini-chat', {
+      // Generate insights using OpenAI
+      const response = await supabase.functions.invoke('openai-chat', {
         body: {
           messages: [
             {
