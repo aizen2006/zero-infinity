@@ -111,13 +111,16 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0 flex flex-col">
+      <DialogContent className="max-w-6xl h-[90vh] p-0 flex flex-col" aria-describedby="widget-config-description">
         <div className="flex flex-1 min-h-0">
           {/* Left Panel - Configuration */}
           <div className="flex-1 flex flex-col min-h-0">
             <DialogHeader className="p-6 pb-4 flex-shrink-0">
               <DialogTitle className="text-2xl font-bold">Add New Widget</DialogTitle>
-              <WidgetConfigProgress 
+              <div id="widget-config-description" className="text-sm text-muted-foreground">
+                Create and customize a new widget for your dashboard with data from connected apps.
+              </div>
+              <WidgetConfigProgress
                 currentStep={currentStep} 
                 totalSteps={steps.length} 
               />

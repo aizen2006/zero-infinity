@@ -74,9 +74,12 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" aria-describedby="add-widget-description">
         <DialogHeader>
           <DialogTitle>Add New Widget</DialogTitle>
+          <div id="add-widget-description" className="text-sm text-muted-foreground">
+            Create a new widget to display data from your connected apps.
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

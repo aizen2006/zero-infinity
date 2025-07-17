@@ -61,9 +61,9 @@ export const CreateReminderDialog: React.FC<CreateReminderDialogProps> = ({
           user_id: user.id,
           title,
           description,
-          trigger_type: frequency,
+          trigger_type: frequency === 'real-time' ? 'real_time' : frequency === 'when-met' ? 'when_met' : frequency,
           trigger_config: triggerConfig,
-          notification_channels: method === 'both' ? ['email', 'in-app'] : [method],
+          notification_channels: method === 'both' ? ['email', 'in_app'] : method === 'in-app' ? ['in_app'] : [method],
           is_active: true
         })
         .select()
@@ -112,9 +112,12 @@ export const CreateReminderDialog: React.FC<CreateReminderDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" aria-describedby="reminder-dialog-description">
         <DialogHeader>
           <DialogTitle>Create New Reminder</DialogTitle>
+          <div id="reminder-dialog-description" className="text-sm text-muted-foreground">
+            Set up automated reminders based on your data and preferences.
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

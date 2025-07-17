@@ -341,6 +341,7 @@ const Integrations: React.FC = () => {
   const [apps, setApps] = useState(integrations);
   const [userIntegrations, setUserIntegrations] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showConnected, setShowConnected] = useState(false);
 
   const categories = ['All', ...Array.from(new Set(integrations.map(app => app.category)))];
 
@@ -348,7 +349,8 @@ const Integrations: React.FC = () => {
     const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          app.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || app.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesConnection = !showConnected || app.connected;
+    return matchesSearch && matchesCategory && matchesConnection;
   });
 
   const fetchUserIntegrations = async () => {
@@ -504,29 +506,34 @@ const Integrations: React.FC = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Integrations</h1>
-          <p className="text-muted-foreground">
-            Connect your favorite apps to centralize your data
-          </p>
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">Integrations</h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              Connect your favorite apps to centralize your data
+            </p>
+          </div>
+          <Button onClick={() => setShowConnected(!showConnected)} variant="outline" size="sm">
+            {showConnected ? 'Show All' : 'Show Connected'}
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="text-2xl font-bold text-green-500">{connectedCount}</div>
               <p className="text-sm text-muted-foreground">Connected Apps</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="text-2xl font-bold text-blue-500">{integrations.length - connectedCount}</div>
               <p className="text-sm text-muted-foreground">Available Apps</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="text-2xl font-bold text-purple-500">{integrations.length}</div>
               <p className="text-sm text-muted-foreground">Total Integrations</p>
             </CardContent>
@@ -557,7 +564,7 @@ const Integrations: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredApps.map((app) => (
             <Card key={app.id} className="group hover:shadow-lg transition-all duration-200">
               <CardHeader>
