@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
     const htmlContent = getEmailTemplate(type, content, subject);
 
     const emailResponse = await resend.emails.send({
-      from: "ZERO Dashboard <noreply@resend.dev>",
+      from: "ZERO Dashboard <onboarding@resend.dev>",
       to: [to],
       subject: subject,
       html: htmlContent,
